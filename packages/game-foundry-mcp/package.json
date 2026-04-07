@@ -1,0 +1,24 @@
+{
+  "name": "@mcptoolshop/game-foundry-mcp",
+  "version": "0.1.0",
+  "description": "Game Foundry OS — unified MCP server for sprite foundry, encounter doctrine, and engine bridge",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "game-foundry-mcp": "index.js"
+  },
+  "scripts": {
+    "build": "echo 'plain JS — no build needed'",
+    "test": "echo 'tests live in domain packages'"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@mcptoolshop/game-foundry-registry": "*",
+    "@mcptoolshop/sprite-foundry-mcp": "*",
+    "@mcptoolshop/encounter-doctrine-mcp": "*",
+    "@mcptoolshop/engine-bridge-mcp": "*",
+    "zod": "^3.23.0"
+  },
+  "author": "mcp-tool-shop",
+  "license": "MIT"
+}

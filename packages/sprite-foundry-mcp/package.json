@@ -1,0 +1,21 @@
+{
+  "name": "@mcptoolshop/sprite-foundry-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for sprite asset pipeline management",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "sprite-foundry-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@mcptoolshop/game-foundry-registry": "*",
+    "zod": "^3.23.0"
+  },
+  "author": "mcp-tool-shop",
+  "license": "MIT"
+}

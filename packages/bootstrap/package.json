@@ -1,0 +1,19 @@
+{
+  "name": "@mcptoolshop/game-foundry-bootstrap",
+  "version": "0.1.0",
+  "description": "Bootstrap scanner for seeding the production registry from existing projects",
+  "type": "module",
+  "main": "dist/scan-tfr.js",
+  "bin": {
+    "foundry-bootstrap": "dist/scan-tfr.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mcptoolshop/game-foundry-registry": "*"
+  },
+  "author": "mcp-tool-shop",
+  "license": "MIT"
+}

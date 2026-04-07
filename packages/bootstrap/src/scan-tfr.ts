@@ -321,25 +321,25 @@ export function bootstrap(db: Database.Database, projectRoot: string): {
 
 // ─── Helpers ────────────────────────────────────────────────
 
-function formatName(id: string): string {
+export function formatName(id: string): string {
   return id.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
 }
 
-function countPackDirections(projectRoot: string, packDir: string): number {
+export function countPackDirections(projectRoot: string, packDir: string): number {
   const absDir = path.join(projectRoot, packDir);
   if (!fs.existsSync(absDir)) return 0;
   const files = fs.readdirSync(absDir).filter(f => f.endsWith('.png'));
   return files.length;
 }
 
-function countDirectionalDirs(projectRoot: string, charId: string): number {
+export function countDirectionalDirs(projectRoot: string, charId: string): number {
   const dirPath = path.join(projectRoot, 'assets/sprites/directional', charId);
   if (!fs.existsSync(dirPath)) return 0;
   const expected = ['front', 'front_34', 'side', 'back_34', 'back'];
   return expected.filter(d => fs.existsSync(path.join(dirPath, d))).length;
 }
 
-function deriveProductionStates(projectRoot: string, charId: string, variantId: string, packId: string): Record<string, string> {
+export function deriveProductionStates(projectRoot: string, charId: string, variantId: string, packId: string): Record<string, string> {
   const states: Record<string, string> = {};
 
   // Concepts

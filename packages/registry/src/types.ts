@@ -14,6 +14,39 @@ export type VariantType = 'base' | 'phase2' | 'portrait' | 'alt';
 /** Pack types */
 export type PackType = 'enemy' | 'party' | 'boss' | 'npc';
 
+/** Variant production lifecycle states (ordered) */
+export type VariantProductionState =
+  | 'draft'
+  | 'concept_batch_started'
+  | 'concept_candidates_recorded'
+  | 'concept_locked'
+  | 'directional_batch_started'
+  | 'directional_locked'
+  | 'sheet_assembled'
+  | 'pack_sliced'
+  | 'engine_synced'
+  | 'proved'
+  | 'frozen';
+
+/** Batch types */
+export type BatchType = 'concept' | 'directional' | 'portrait';
+export type BatchStatus = 'open' | 'recorded' | 'locked' | 'cancelled';
+
+/** Pick types */
+export type PickType = 'concept' | 'directional';
+
+/** Artifact types */
+export type ArtifactType =
+  | 'concept_candidate' | 'concept_locked'
+  | 'directional_candidate' | 'directional_locked'
+  | 'sheet' | 'sheet_preview' | 'sheet_silhouette'
+  | 'pack_member' | 'portrait'
+  | 'family_strip' | 'silhouette_strip'
+  | 'manifest' | 'sync_receipt';
+
+/** Portrait states */
+export type PortraitState = 'none' | 'missing' | 'attached' | 'complete';
+
 // ─── Row types (match SQLite tables) ───────────────────────
 
 export interface ProjectRow {
@@ -59,6 +92,11 @@ export interface VariantRow {
   directions_present: number;
   content_hash: string | null;
   proof_state: ProofState;
+  production_state: VariantProductionState;
+  portrait_state: PortraitState;
+  display_name: string | null;
+  runtime_variant_name: string | null;
+  canonical_pack_name: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -126,6 +164,81 @@ export interface FreezeLogRow {
   frozen_at: string;
   frozen_by: string | null;
   notes: string | null;
+}
+
+// ─── Phase 1 row types ─────────────────────────────────────
+
+export interface FoundryBatchRow {
+  id: string;
+  variant_id: string;
+  batch_type: BatchType;
+  direction: string | null;
+  candidate_count: number;
+  source_model: string | null;
+  params_json: string | null;
+  output_dir: string | null;
+  status: BatchStatus;
+  created_at: string;
+}
+
+export interface LockedPickRow {
+  id: string;
+  variant_id: string;
+  pick_type: PickType;
+  direction: string | null;
+  candidate_name: string | null;
+  candidate_index: number | null;
+  locked_artifact_id: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface ArtifactRow {
+  id: string;
+  project_id: string;
+  variant_id: string;
+  artifact_type: ArtifactType;
+  direction: string | null;
+  path: string;
+  content_hash: string | null;
+  width: number | null;
+  height: number | null;
+  metadata_json: string | null;
+  is_canonical: number;
+  created_at: string;
+}
+
+export interface StateEventRow {
+  id: number;
+  project_id: string;
+  entity_type: string;
+  entity_id: string;
+  from_state: string | null;
+  to_state: string;
+  reason: string | null;
+  tool_name: string | null;
+  payload_json: string | null;
+  created_at: string;
+}
+
+// ─── Phase 1 API types ─────────────────────────────────────
+
+export interface NextStepResult {
+  variant_id: string;
+  production_state: VariantProductionState;
+  portrait_state: PortraitState;
+  missing_locks: string[];
+  missing_artifacts: string[];
+  engine_synced: boolean;
+  next_action: string;
+  blockers: string[];
+}
+
+export interface TimelineEntry {
+  timestamp: string;
+  type: 'state_change' | 'batch' | 'pick' | 'artifact' | 'sync';
+  summary: string;
+  detail: Record<string, unknown>;
 }
 
 // ─── API types (for tool responses) ────────────────────────

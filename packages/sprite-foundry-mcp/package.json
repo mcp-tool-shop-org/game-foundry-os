@@ -14,6 +14,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "@mcptoolshop/game-foundry-registry": "*",
+    "@mcptoolshop/sprite-foundry-core": "*",
     "zod": "^3.23.0"
   },
   "author": "mcp-tool-shop",

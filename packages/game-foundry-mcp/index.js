@@ -14,6 +14,20 @@ import { registerRegisterCharacter } from '../sprite-foundry-mcp/dist/tools/regi
 import { registerRegisterVariant } from '../sprite-foundry-mcp/dist/tools/registerVariant.js';
 import { registerSetProductionState } from '../sprite-foundry-mcp/dist/tools/setProductionState.js';
 
+// Sprite Foundry workflow tools (Phase 1)
+import { registerFoundryCreateVariant } from '../sprite-foundry-mcp/dist/tools/foundryCreateVariant.js';
+import { registerFoundryStartConceptBatch } from '../sprite-foundry-mcp/dist/tools/foundryStartConceptBatch.js';
+import { registerFoundryRecordConceptCandidates } from '../sprite-foundry-mcp/dist/tools/foundryRecordConceptCandidates.js';
+import { registerFoundryLockConceptPick } from '../sprite-foundry-mcp/dist/tools/foundryLockConceptPick.js';
+import { registerFoundryStartDirectionalBatch } from '../sprite-foundry-mcp/dist/tools/foundryStartDirectionalBatch.js';
+import { registerFoundryLockDirectionalPick } from '../sprite-foundry-mcp/dist/tools/foundryLockDirectionalPick.js';
+import { registerFoundryAssembleSheet } from '../sprite-foundry-mcp/dist/tools/foundryAssembleSheet.js';
+import { registerFoundrySlicePack } from '../sprite-foundry-mcp/dist/tools/foundrySlicePack.js';
+import { registerFoundryGetNextStep } from '../sprite-foundry-mcp/dist/tools/foundryGetNextStep.js';
+import { registerFoundryGetCharacterTimeline } from '../sprite-foundry-mcp/dist/tools/foundryGetCharacterTimeline.js';
+import { registerFoundrySyncPackToEngine } from '../sprite-foundry-mcp/dist/tools/foundrySyncPackToEngine.js';
+import { registerFoundryAttachPortraitSet } from '../sprite-foundry-mcp/dist/tools/foundryAttachPortraitSet.js';
+
 // Encounter Doctrine tools
 import { setDb } from '../encounter-doctrine-mcp/dist/server.js';
 import { registerValidateBounds } from '../encounter-doctrine-mcp/dist/tools/validateBounds.js';
@@ -41,7 +55,7 @@ const server = new McpServer({
   version: '0.1.0',
 });
 
-// Sprite Foundry (8)
+// Sprite Foundry — inspection (8)
 registerGetCharacterStatus(server, db);
 registerListCharacters(server, db);
 registerValidateCompleteness(server, db);
@@ -50,6 +64,20 @@ registerScanAssets(server, db);
 registerRegisterCharacter(server, db);
 registerRegisterVariant(server, db);
 registerSetProductionState(server, db);
+
+// Sprite Foundry — workflow (12)
+registerFoundryCreateVariant(server, db);
+registerFoundryStartConceptBatch(server, db);
+registerFoundryRecordConceptCandidates(server, db);
+registerFoundryLockConceptPick(server, db);
+registerFoundryStartDirectionalBatch(server, db);
+registerFoundryLockDirectionalPick(server, db);
+registerFoundryAssembleSheet(server, db);
+registerFoundrySlicePack(server, db);
+registerFoundryGetNextStep(server, db);
+registerFoundryGetCharacterTimeline(server, db);
+registerFoundrySyncPackToEngine(server, db);
+registerFoundryAttachPortraitSet(server, db);
 
 // Encounter Doctrine (7)
 setDb(db);

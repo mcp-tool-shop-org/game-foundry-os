@@ -446,6 +446,12 @@ describe('next step', () => {
       INSERT INTO encounters (id, project_id, chapter, label)
       VALUES ('enc1', 'test-project', 'ch1', 'Test Encounter')
     `).run();
+    // V3 engine checks for proof runs before allowing continue_production —
+    // add a proof run so it doesn't suggest run_proof_suite
+    db.prepare(`
+      INSERT INTO proof_runs (id, project_id, scope_type, scope_id, result, blocking_failures, warning_count, receipt_hash)
+      VALUES ('pr-core', 'test-project', 'project', 'test-project', 'pass', 0, 0, 'abc123')
+    `).run();
     const step = getStudioNextStep(db, 'test-project');
     expect(step.action).toBe('continue_production');
     expect(step.priority).toBe('low');

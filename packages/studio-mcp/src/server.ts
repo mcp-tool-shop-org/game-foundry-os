@@ -18,6 +18,12 @@ import { registerStudioCreateChapterStub } from './tools/studioCreateChapterStub
 import { registerStudioCreateCharacterStub } from './tools/studioCreateCharacterStub.js';
 import { registerStudioExportTemplate } from './tools/studioExportTemplate.js';
 import { registerStudioDiffProjectVsTemplate } from './tools/studioDiffProjectVsTemplate.js';
+import { registerStudioPlanRepair } from './tools/studioPlanRepair.js';
+import { registerStudioApplyRepair } from './tools/studioApplyRepair.js';
+import { registerStudioGetRepairStatus } from './tools/studioGetRepairStatus.js';
+import { registerStudioGetAdoptionPlan } from './tools/studioGetAdoptionPlan.js';
+import { registerStudioGetQualityState } from './tools/studioGetQualityState.js';
+import { registerStudioApproveRepair } from './tools/studioApproveRepair.js';
 
 let _db: Database.Database | undefined;
 
@@ -55,6 +61,12 @@ export function createServer(): McpServer {
   registerStudioCreateCharacterStub(server);
   registerStudioExportTemplate(server);
   registerStudioDiffProjectVsTemplate(server);
+  registerStudioPlanRepair(server);
+  registerStudioApplyRepair(server);
+  registerStudioGetRepairStatus(server);
+  registerStudioGetAdoptionPlan(server);
+  registerStudioGetQualityState(server);
+  registerStudioApproveRepair(server);
 
   return server;
 }

@@ -24,3 +24,17 @@ export { getProjectStatus } from './project-status.js';
 
 export { getStudioNextStep } from './next-step.js';
 export type { StudioNextStep } from './next-step.js';
+
+export { REPAIR_CATALOG, getRepairContract, findingToActionKey } from './repair-catalog.js';
+
+export { planRepair, getRepairPlan } from './repair-plan.js';
+
+export { applyRepair } from './repair-apply.js';
+
+export { verifyRepairClosure } from './repair-verify.js';
+
+export { findingToDomain, findingsByDomain, computeQualityStates, getWeakestDomain, persistQualityStates, ALL_DOMAINS } from './quality-domains.js';
+
+export { classifyProject, partitionFindings, generateAdoptionPlan, getAdoptionStage, advanceAdoptionStage } from './adoption.js';
+
+export { approveRepairPlan, rejectRepairPlan } from './repair-plan.js';

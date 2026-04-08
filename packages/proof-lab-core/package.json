@@ -10,9 +10,14 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@mcptoolshop/engine-bridge-mcp": "*",
     "@mcptoolshop/game-foundry-registry": "*",
-    "better-sqlite3": "^11.0.0"
+    "better-sqlite3": "^11.0.0",
+    "pngjs": "^7.0.0"
   },
   "author": "mcp-tool-shop",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/pngjs": "^6.0.5"
+  }
 }

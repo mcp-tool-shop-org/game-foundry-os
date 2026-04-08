@@ -267,10 +267,11 @@ describe('deterministic next-step', () => {
     seedProject();
     const b = createBootstrap(db, 'test-project', null, 'combat_first', tmpDir);
     completeBootstrap(db, b.id, 'pass');
-    // Missing runtime shell is a critical repairable blocker
+    // V3 domain-aware ordering: proof_shell_missing (playability, weight 0) outranks
+    // shell_battle_scene (runtime, weight 1) — both are critical repairable
     const step = getStudioNextStep(db, 'test-project');
     expect(step.priority).toBe('critical');
-    expect(step.action).toBe('studio_install_runtime_shell');
+    expect(step.action).toBe('studio_install_proof_shell');
     expect(step.source).toBeTruthy();
   });
 
@@ -285,7 +286,9 @@ describe('deterministic next-step', () => {
     const b = createBootstrap(db, 'test-project', null, 'combat_first', tmpDir);
     completeBootstrap(db, b.id, 'pass');
     const step = getStudioNextStep(db, 'test-project');
-    expect(step.action).toBe('studio_install_runtime_shell');
+    // V3 domain-aware ordering: proof_shell_missing (playability, weight 0) outranks
+    // shell_ findings (runtime, weight 1) when both are present
+    expect(step.action).toBe('studio_install_proof_shell');
   });
 
   it('returns production move when project ready', () => {
@@ -298,6 +301,12 @@ describe('deterministic next-step', () => {
     db.prepare(`
       INSERT INTO encounters (id, project_id, chapter, label)
       VALUES ('enc-ns', 'test-project', 'ch1', 'Test Encounter')
+    `).run();
+    // V3 engine checks for proof runs before allowing continue_production —
+    // add a proof run so it doesn't suggest run_proof_suite
+    db.prepare(`
+      INSERT INTO proof_runs (id, project_id, scope_type, scope_id, result, blocking_failures, warning_count, receipt_hash)
+      VALUES ('pr-ns', 'test-project', 'project', 'test-project', 'pass', 0, 0, 'abc123')
     `).run();
     const step = getStudioNextStep(db, 'test-project');
     expect(step.action).toBe('continue_production');

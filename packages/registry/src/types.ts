@@ -661,3 +661,277 @@ export interface VariantCheckResult {
   pass: boolean;
   missing: string[];
 }
+
+// ─── v1.3.0 Repair Closure Spine ──────────────────────────
+
+/** Risk classification for repair actions */
+export type RepairRiskLevel = 'safe' | 'moderate' | 'destructive';
+
+/** Lifecycle states for a repair plan */
+export type RepairPlanStatus =
+  | 'planned'
+  | 'dry_run_passed'
+  | 'applied'
+  | 'verified'
+  | 'closed'
+  | 'failed'
+  | 'escalated';
+
+/** Receipt result */
+export type RepairReceiptStatus = 'pending' | 'pass' | 'fail' | 'partial';
+
+/** Per-step execution result */
+export type RepairStepResult = 'attempted' | 'applied' | 'skipped' | 'failed';
+
+/** Repair state tracked per diagnostic finding */
+export type FindingRepairState =
+  | 'unplanned'
+  | 'planned'
+  | 'dry_run_passed'
+  | 'applied_pending_recheck'
+  | 'closed'
+  | 'escalated'
+  | 'failed';
+
+/** Enhanced finding with repair state tracking */
+export interface DiagnosticFindingV2 extends DiagnosticFinding {
+  repair_state: FindingRepairState;
+  last_receipt_id: string | null;
+}
+
+/** Static contract for a known repair action */
+export interface RepairActionContract {
+  action_key: string;
+  display_name: string;
+  risk_level: RepairRiskLevel;
+  dry_run_supported: boolean;
+  postchecks: string[];
+  preconditions: string[];
+  expected_effects: string[];
+  scope: 'filesystem' | 'registry' | 'godot_config' | 'mixed';
+}
+
+/** A single step in a repair plan */
+export interface RepairPlanStep {
+  step_index: number;
+  action: string;
+  target_path: string;
+  expected_change: string;
+  risk: RepairRiskLevel;
+}
+
+// ─── Repair row types ─────────────────────────────────────
+
+export interface RepairPlanRow {
+  id: string;
+  project_id: string;
+  finding_ids_json: string;
+  action_key: string;
+  target: string;
+  mode: string;
+  plan_fingerprint: string;
+  steps_json: string;
+  expected_effects_json: string | null;
+  preconditions_json: string | null;
+  status: RepairPlanStatus;
+  created_at: string;
+}
+
+export interface RepairReceiptRow {
+  id: string;
+  project_id: string;
+  plan_id: string;
+  action_key: string;
+  mode: string;
+  before_json: string | null;
+  after_json: string | null;
+  changed_targets_json: string | null;
+  step_results_json: string;
+  verification_json: string | null;
+  status_delta_json: string | null;
+  receipt_hash: string | null;
+  status: RepairReceiptStatus;
+  created_at: string;
+}
+
+export interface RepairRegressionRow {
+  id: string;
+  project_id: string;
+  receipt_id: string;
+  regression_type: string;
+  severity: string;
+  details_json: string | null;
+  created_at: string;
+}
+
+// ─── Repair API types ─────────────────────────────────────
+
+/** Result from planRepair */
+export interface RepairPlanResult {
+  plan_id: string;
+  action_key: string;
+  finding_ids: string[];
+  steps: RepairPlanStep[];
+  expected_effects: string[];
+  precondition_check: { passed: boolean; failures: string[] };
+  plan_fingerprint: string;
+  can_dry_run: boolean;
+  can_apply: boolean;
+  blockers: string[];
+}
+
+/** Per-step result in a receipt */
+export interface RepairStepResultEntry {
+  step_index: number;
+  result: RepairStepResult;
+  detail: string;
+}
+
+/** Result from applyRepair */
+export interface RepairApplyResult {
+  receipt_id: string;
+  plan_id: string;
+  action_key: string;
+  mode: 'dry_run' | 'apply';
+  step_results: RepairStepResultEntry[];
+  verification: {
+    ran: boolean;
+    passed: boolean;
+    findings_cleared: string[];
+    new_findings: string[];
+  } | null;
+  status_delta: { from: string; to: string } | null;
+  receipt_hash: string;
+}
+
+/** Result from verifyRepairClosure */
+export interface RepairVerificationResult {
+  receipt_id: string;
+  plan_id: string;
+  action_key: string;
+  findings_before: string[];
+  findings_after: string[];
+  findings_cleared: string[];
+  findings_new: string[];
+  regressions_detected: boolean;
+  status_transition: { from: ProjectHealthStatus; to: ProjectHealthStatus } | null;
+  closed: boolean;
+}
+
+/** Enhanced next-step with repair awareness */
+export interface StudioNextStepV2 {
+  action: string;
+  action_key: string | null;
+  target: string | null;
+  reason: string;
+  priority: 'critical' | 'normal' | 'low';
+  source: string | null;
+  can_dry_run: boolean;
+  can_apply: boolean;
+  expected_outcome: string;
+}
+
+// ─── v1.4.0 Adoption + Quality Spine ─────────────────────
+
+/** Quality domains for game project health */
+export type QualityDomain =
+  | 'visual_integrity'
+  | 'runtime_integrity'
+  | 'encounter_integrity'
+  | 'canon_integrity'
+  | 'playability_integrity'
+  | 'shipping_integrity';
+
+/** Per-domain quality status */
+export type QualityDomainStatus = 'healthy' | 'warning' | 'degraded' | 'blocked' | 'unknown';
+
+/** Quality domain state snapshot */
+export interface QualityDomainState {
+  domain: QualityDomain;
+  status: QualityDomainStatus;
+  blocker_count: number;
+  warning_count: number;
+  finding_ids: string[];
+  next_action: string | null;
+}
+
+/** Adoption profiles for project intake */
+export type AdoptionProfile =
+  | 'greenfield'
+  | 'retrofit_prototype'
+  | 'vertical_slice'
+  | 'late_stage_production';
+
+/** Risk classification for partitioning findings */
+export type RepairRiskClass =
+  | 'safe_auto'
+  | 'approval_required'
+  | 'manual_only'
+  | 'advisory';
+
+/** Approval status for repair plans */
+export type RepairApprovalStatus =
+  | 'not_required'
+  | 'pending_approval'
+  | 'approved'
+  | 'rejected';
+
+/** One stage in an adoption plan */
+export interface AdoptionStage {
+  stage: number;
+  name: string;
+  description: string;
+  actions: string[];
+  status: 'pending' | 'in_progress' | 'completed' | 'skipped';
+}
+
+/** Complete adoption plan */
+export interface AdoptionPlan {
+  plan_id: string;
+  project_id: string;
+  profile: AdoptionProfile;
+  stages: AdoptionStage[];
+  current_stage: number;
+  completion: { total_stages: number; completed_stages: number; pct: number };
+  partitioned_findings: Record<RepairRiskClass, string[]>;
+  best_next_move: string;
+}
+
+/** Extended repair plan row with approval columns */
+export interface RepairPlanRowV2 extends RepairPlanRow {
+  approval_status: RepairApprovalStatus;
+  approved_by: string | null;
+  approved_at: string | null;
+  risk_class: RepairRiskClass;
+}
+
+/** Quality-aware next step */
+export interface StudioNextStepV3 extends StudioNextStepV2 {
+  quality_domain: QualityDomain | null;
+  why_it_matters: string;
+}
+
+/** Quality domain state row (DB table) */
+export interface QualityDomainStateRow {
+  id: string;
+  project_id: string;
+  domain: string;
+  status: string;
+  blocker_count: number;
+  warning_count: number;
+  finding_ids_json: string | null;
+  next_action: string | null;
+  computed_at: string;
+}
+
+/** Adoption plan row (DB table) */
+export interface AdoptionPlanRow {
+  id: string;
+  project_id: string;
+  profile: string;
+  current_stage: number;
+  stages_json: string;
+  completion_json: string | null;
+  created_at: string;
+  updated_at: string;
+}

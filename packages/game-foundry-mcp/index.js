@@ -90,6 +90,7 @@ import { registerProofGetNextStep } from '../proof-lab-mcp/dist/tools/proofGetNe
 import { registerProofRevokeFreeze } from '../proof-lab-mcp/dist/tools/proofRevokeFreeze.js';
 import { registerProofCompareRuns } from '../proof-lab-mcp/dist/tools/proofCompareRuns.js';
 import { registerProofGetProjectMatrix } from '../proof-lab-mcp/dist/tools/proofGetProjectMatrix.js';
+import { registerProofRunVisualSuite } from '../proof-lab-mcp/dist/tools/proofRunVisualSuite.js';
 
 // Studio Bootstrap tools (Phase 5)
 import { setDb as setStudioDb } from '../studio-mcp/dist/server.js';
@@ -109,6 +110,14 @@ import { registerStudioCreateChapterStub } from '../studio-mcp/dist/tools/studio
 import { registerStudioCreateCharacterStub } from '../studio-mcp/dist/tools/studioCreateCharacterStub.js';
 import { registerStudioExportTemplate } from '../studio-mcp/dist/tools/studioExportTemplate.js';
 import { registerStudioDiffProjectVsTemplate } from '../studio-mcp/dist/tools/studioDiffProjectVsTemplate.js';
+// v1.3.0 repair tools
+import { registerStudioPlanRepair } from '../studio-mcp/dist/tools/studioPlanRepair.js';
+import { registerStudioApplyRepair } from '../studio-mcp/dist/tools/studioApplyRepair.js';
+import { registerStudioGetRepairStatus } from '../studio-mcp/dist/tools/studioGetRepairStatus.js';
+// v1.4.0 adoption + quality tools
+import { registerStudioGetAdoptionPlan } from '../studio-mcp/dist/tools/studioGetAdoptionPlan.js';
+import { registerStudioGetQualityState } from '../studio-mcp/dist/tools/studioGetQualityState.js';
+import { registerStudioApproveRepair } from '../studio-mcp/dist/tools/studioApproveRepair.js';
 
 // Engine Bridge tools
 import { registerVerifyRuntimePaths } from '../engine-bridge-mcp/dist/tools/verifyRuntimePaths.js';
@@ -131,10 +140,10 @@ import { registerAssetImportAudit } from '../engine-bridge-mcp/dist/tools/assetI
 // ─── Single DB connection ───────────────────────────────────
 const db = openDatabase();
 
-// ─── Single MCP server, 102 tools ───────────────────────────
+// ─── Single MCP server, 108 tools ───────────────────────────
 const server = new McpServer({
   name: 'game-foundry-mcp',
-  version: '1.1.0',
+  version: '1.4.0',
 });
 
 // Sprite Foundry — inspection (8)
@@ -223,6 +232,7 @@ registerProofGetNextStep(server);
 registerProofRevokeFreeze(server);
 registerProofCompareRuns(server);
 registerProofGetProjectMatrix(server);
+registerProofRunVisualSuite(server);
 
 // Canon Layer (15)
 setCanonDb(db);
@@ -260,6 +270,14 @@ registerStudioCreateChapterStub(server);
 registerStudioCreateCharacterStub(server);
 registerStudioExportTemplate(server);
 registerStudioDiffProjectVsTemplate(server);
+
+// Studio Repair + Adoption + Quality (v1.3.0 + v1.4.0)
+registerStudioPlanRepair(server);
+registerStudioApplyRepair(server);
+registerStudioGetRepairStatus(server);
+registerStudioGetAdoptionPlan(server);
+registerStudioGetQualityState(server);
+registerStudioApproveRepair(server);
 
 // ─── Connect ────────────────────────────────────────────────
 const transport = new StdioServerTransport();

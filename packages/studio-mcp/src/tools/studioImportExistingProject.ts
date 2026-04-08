@@ -2,7 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { getDb } from '../server.js';
 import { upsertProject } from '@mcptoolshop/game-foundry-registry';
-import { runDiagnostics, createBootstrap, completeBootstrap } from '@mcptoolshop/studio-bootstrap-core';
+import { runDiagnostics, createBootstrap, completeBootstrap, classifyProject, generateAdoptionPlan, partitionFindings } from '@mcptoolshop/studio-bootstrap-core';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -40,6 +40,11 @@ export function registerStudioImportExistingProject(server: McpServer): void {
       const result = foundCount === Object.keys(scan).length ? 'pass' : 'partial';
       completeBootstrap(db, bootstrap.id, result, JSON.stringify({ scan, diagnostics: diag }));
 
+      // Adoption classification and staged plan
+      const profile = classifyProject(scan, diag);
+      const adoptionPlan = generateAdoptionPlan(db, params.project_id, profile, diag.findings);
+      const partitioned = partitionFindings(diag.findings);
+
       return {
         content: [{
           type: 'text' as const,
@@ -48,6 +53,9 @@ export function registerStudioImportExistingProject(server: McpServer): void {
             scan,
             diagnostics: diag,
             bootstrap_result: result,
+            adoption_profile: profile,
+            adoption_plan: adoptionPlan,
+            finding_partitions: partitioned,
           }, null, 2),
         }],
       };

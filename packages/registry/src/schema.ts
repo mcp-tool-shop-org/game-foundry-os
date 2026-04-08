@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 
-const SCHEMA_VERSION = 6;
+const SCHEMA_VERSION = 8;
 
 const MIGRATIONS: string[] = [
   // Version 1: Initial schema
@@ -470,6 +470,92 @@ const MIGRATIONS: string[] = [
   CREATE INDEX IF NOT EXISTS idx_project_bootstraps ON project_bootstraps(project_id);
   CREATE INDEX IF NOT EXISTS idx_bootstrap_artifacts ON bootstrap_artifacts(project_bootstrap_id);
   CREATE INDEX IF NOT EXISTS idx_template_policies ON template_policies(template_id);
+  `,
+
+  // Version 7: Repair Closure Spine — plans, receipts, regressions
+  `
+  CREATE TABLE IF NOT EXISTS repair_plans (
+    id                  TEXT PRIMARY KEY,
+    project_id          TEXT NOT NULL REFERENCES projects(id),
+    finding_ids_json    TEXT NOT NULL,
+    action_key          TEXT NOT NULL,
+    target              TEXT NOT NULL,
+    mode                TEXT NOT NULL DEFAULT 'planned',
+    plan_fingerprint    TEXT NOT NULL,
+    steps_json          TEXT NOT NULL,
+    expected_effects_json TEXT,
+    preconditions_json  TEXT,
+    status              TEXT NOT NULL DEFAULT 'planned',
+    created_at          TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS repair_receipts (
+    id                  TEXT PRIMARY KEY,
+    project_id          TEXT NOT NULL REFERENCES projects(id),
+    plan_id             TEXT NOT NULL REFERENCES repair_plans(id),
+    action_key          TEXT NOT NULL,
+    mode                TEXT NOT NULL,
+    before_json         TEXT,
+    after_json          TEXT,
+    changed_targets_json TEXT,
+    step_results_json   TEXT NOT NULL,
+    verification_json   TEXT,
+    status_delta_json   TEXT,
+    receipt_hash        TEXT,
+    status              TEXT NOT NULL DEFAULT 'pending',
+    created_at          TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS repair_regressions (
+    id                  TEXT PRIMARY KEY,
+    project_id          TEXT NOT NULL REFERENCES projects(id),
+    receipt_id          TEXT NOT NULL REFERENCES repair_receipts(id),
+    regression_type     TEXT NOT NULL,
+    severity            TEXT NOT NULL DEFAULT 'major',
+    details_json        TEXT,
+    created_at          TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_repair_plans_project ON repair_plans(project_id);
+  CREATE INDEX IF NOT EXISTS idx_repair_plans_status ON repair_plans(status);
+  CREATE INDEX IF NOT EXISTS idx_repair_receipts_plan ON repair_receipts(plan_id);
+  CREATE INDEX IF NOT EXISTS idx_repair_receipts_project ON repair_receipts(project_id);
+  CREATE INDEX IF NOT EXISTS idx_repair_regressions_receipt ON repair_regressions(receipt_id);
+  `,
+
+  // Version 8: Adoption + Quality Spine
+  `
+  ALTER TABLE repair_plans ADD COLUMN approval_status TEXT NOT NULL DEFAULT 'not_required';
+  ALTER TABLE repair_plans ADD COLUMN approved_by TEXT;
+  ALTER TABLE repair_plans ADD COLUMN approved_at TEXT;
+  ALTER TABLE repair_plans ADD COLUMN risk_class TEXT NOT NULL DEFAULT 'safe_auto';
+
+  CREATE TABLE IF NOT EXISTS quality_domain_states (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    domain          TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'unknown',
+    blocker_count   INTEGER NOT NULL DEFAULT 0,
+    warning_count   INTEGER NOT NULL DEFAULT 0,
+    finding_ids_json TEXT,
+    next_action     TEXT,
+    computed_at     TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS adoption_plans (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    profile         TEXT NOT NULL,
+    current_stage   INTEGER NOT NULL DEFAULT 1,
+    stages_json     TEXT NOT NULL,
+    completion_json TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_quality_domain_project ON quality_domain_states(project_id);
+  CREATE INDEX IF NOT EXISTS idx_quality_domain_lookup ON quality_domain_states(project_id, domain);
+  CREATE INDEX IF NOT EXISTS idx_adoption_plans_project ON adoption_plans(project_id);
   `,
 ];
 

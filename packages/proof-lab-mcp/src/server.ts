@@ -17,6 +17,7 @@ import { registerProofGetNextStep } from './tools/proofGetNextStep.js';
 import { registerProofRevokeFreeze } from './tools/proofRevokeFreeze.js';
 import { registerProofCompareRuns } from './tools/proofCompareRuns.js';
 import { registerProofGetProjectMatrix } from './tools/proofGetProjectMatrix.js';
+import { registerProofRunVisualSuite } from './tools/proofRunVisualSuite.js';
 
 let _db: Database.Database | undefined;
 
@@ -53,6 +54,7 @@ export function createServer(): McpServer {
   registerProofRevokeFreeze(server);
   registerProofCompareRuns(server);
   registerProofGetProjectMatrix(server);
+  registerProofRunVisualSuite(server);
 
   return server;
 }

@@ -18,6 +18,10 @@ export type { EncounterSuiteResult } from './encounter-proof.js';
 export { runRuntimeSuite } from './runtime-proof.js';
 export type { RuntimeSuiteResult } from './runtime-proof.js';
 
+// Visual integrity proof
+export { runVisualSuite, checkSprite } from './visual-proof.js';
+export type { VisualSuiteResult, SpriteCheckResult, VisualCheckConfig } from './visual-proof.js';
+
 // Freeze
 export { getFreezeReadiness, createFreezeCandidate, promoteFreeze, revokeFreeze } from './freeze.js';
 

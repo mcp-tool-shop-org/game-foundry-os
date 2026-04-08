@@ -38,3 +38,14 @@ export type { ExportPreset, ExportAuditIssue, ExportAuditResult } from './tools/
 
 export { assetImportAudit } from './tools/assetImportAudit.js';
 export type { AssetImportAuditResult } from './tools/assetImportAudit.js';
+
+// ─── Godot writer (mutation channel) ────────────────────────
+export {
+  serializeGodotValue,
+  registerAutoload,
+  enablePlugin,
+  applyProjectSetting,
+  applyDisplaySetting,
+  applyRenderingSetting,
+} from './utils/godot-writer.js';
+export type { GodotMutationResult } from './utils/godot-writer.js';

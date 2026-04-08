@@ -118,13 +118,23 @@ import { registerGetBattleRuntimeStatus } from '../engine-bridge-mcp/dist/tools/
 import { registerSyncSpritePack } from '../engine-bridge-mcp/dist/tools/syncSpritePack.js';
 import { registerSyncEncounterManifests } from '../engine-bridge-mcp/dist/tools/syncEncounterManifests.js';
 
+// Godot truth reader tools (engine-bridge Phase 5B)
+import { registerInspectProject } from '../engine-bridge-mcp/dist/tools/inspectProject.js';
+import { registerSceneGraph } from '../engine-bridge-mcp/dist/tools/sceneGraph.js';
+import { registerTemplateShellVerify } from '../engine-bridge-mcp/dist/tools/templateShellVerify.js';
+import { registerResourceUidAudit } from '../engine-bridge-mcp/dist/tools/resourceUidAudit.js';
+import { registerAutoloadContract } from '../engine-bridge-mcp/dist/tools/autoloadContract.js';
+import { registerSignalContractAudit } from '../engine-bridge-mcp/dist/tools/signalContractAudit.js';
+import { registerExportAudit } from '../engine-bridge-mcp/dist/tools/exportAudit.js';
+import { registerAssetImportAudit } from '../engine-bridge-mcp/dist/tools/assetImportAudit.js';
+
 // ─── Single DB connection ───────────────────────────────────
 const db = openDatabase();
 
-// ─── Single MCP server, 94 tools ────────────────────────────
+// ─── Single MCP server, 102 tools ───────────────────────────
 const server = new McpServer({
   name: 'game-foundry-mcp',
-  version: '1.0.0',
+  version: '1.1.0',
 });
 
 // Sprite Foundry — inspection (8)
@@ -185,6 +195,16 @@ registerReportUnintegrated(server, db);
 registerGetBattleRuntimeStatus(server, db);
 registerSyncSpritePack(server, db);
 registerSyncEncounterManifests(server, db);
+
+// Godot truth readers + auditors (8)
+registerInspectProject(server, db);
+registerSceneGraph(server, db);
+registerTemplateShellVerify(server, db);
+registerResourceUidAudit(server, db);
+registerAutoloadContract(server, db);
+registerSignalContractAudit(server, db);
+registerExportAudit(server, db);
+registerAssetImportAudit(server, db);
 
 // Proof Lab (15)
 setProofDb(db);

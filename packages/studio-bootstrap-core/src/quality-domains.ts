@@ -14,6 +14,7 @@ export const ALL_DOMAINS: QualityDomain[] = [
   'runtime_integrity',
   'visual_integrity',
   'encounter_integrity',
+  'presentation_integrity',
   'canon_integrity',
   'shipping_integrity',
 ];
@@ -31,6 +32,7 @@ const DOMAIN_RULES: Array<{ prefix: string; domain: QualityDomain }> = [
   { prefix: 'export_', domain: 'shipping_integrity' },
   { prefix: 'canon_', domain: 'canon_integrity' },
   { prefix: 'proof_', domain: 'playability_integrity' },
+  { prefix: 'battle_', domain: 'presentation_integrity' },
   { prefix: 'encounter_', domain: 'encounter_integrity' },
 ];
 
@@ -53,6 +55,7 @@ export function findingsByDomain(
     visual_integrity: [],
     runtime_integrity: [],
     encounter_integrity: [],
+    presentation_integrity: [],
     canon_integrity: [],
     playability_integrity: [],
     shipping_integrity: [],

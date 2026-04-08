@@ -102,6 +102,47 @@ export const REPAIR_CATALOG: Map<string, RepairActionContract> = new Map([
     expected_effects: ['Creates or repairs export_presets.cfg with a default preset'],
     scope: 'filesystem',
   }],
+  // v1.5.0 Battle Scene repair actions
+  ['battle_create_scene_contract', {
+    action_key: 'battle_create_scene_contract',
+    display_name: 'Create Battle Scene Contract',
+    risk_level: 'safe',
+    dry_run_supported: false,
+    postchecks: ['battle_validate_scene_contract'],
+    preconditions: ['project_exists_in_registry'],
+    expected_effects: ['Creates scene contract from encounter with default board geometry and HUD zones'],
+    scope: 'registry',
+  }],
+  ['battle_configure_default_layers', {
+    action_key: 'battle_configure_default_layers',
+    display_name: 'Configure Default UI Layers',
+    risk_level: 'safe',
+    dry_run_supported: false,
+    postchecks: ['battle_validate_layer_dependencies'],
+    preconditions: ['project_exists_in_registry'],
+    expected_effects: ['Configures 5 combat UI layers (intent, threat, forecast, terrain, planning) with defaults'],
+    scope: 'registry',
+  }],
+  ['battle_capture_all_snapshots', {
+    action_key: 'battle_capture_all_snapshots',
+    display_name: 'Capture All Snapshots',
+    risk_level: 'safe',
+    dry_run_supported: false,
+    postchecks: [],
+    preconditions: ['project_exists_in_registry'],
+    expected_effects: ['Captures 5 canonical battle state snapshots (neutral, threat_on, forecast, enemy_turn, pre_commit)'],
+    scope: 'registry',
+  }],
+  ['battle_start_playtest', {
+    action_key: 'battle_start_playtest',
+    display_name: 'Start Playtest Session',
+    risk_level: 'safe',
+    dry_run_supported: false,
+    postchecks: [],
+    preconditions: ['project_exists_in_registry'],
+    expected_effects: ['Creates a playtest session for structured read-failure recording'],
+    scope: 'registry',
+  }],
 ]);
 
 /** Look up a repair contract by action key */

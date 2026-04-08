@@ -118,6 +118,15 @@ import { registerStudioGetRepairStatus } from '../studio-mcp/dist/tools/studioGe
 import { registerStudioGetAdoptionPlan } from '../studio-mcp/dist/tools/studioGetAdoptionPlan.js';
 import { registerStudioGetQualityState } from '../studio-mcp/dist/tools/studioGetQualityState.js';
 import { registerStudioApproveRepair } from '../studio-mcp/dist/tools/studioApproveRepair.js';
+// v1.6.0 chapter spine tools
+import { registerChapterCreate } from '../studio-mcp/dist/tools/chapterCreate.js';
+import { registerChapterGetHealth } from '../studio-mcp/dist/tools/chapterGetHealth.js';
+import { registerChapterGetCoverageMap } from '../studio-mcp/dist/tools/chapterGetCoverageMap.js';
+import { registerChapterGetNextStep } from '../studio-mcp/dist/tools/chapterGetNextStep.js';
+import { registerChapterGetPlaytestStatus } from '../studio-mcp/dist/tools/chapterGetPlaytestStatus.js';
+import { registerChapterList } from '../studio-mcp/dist/tools/chapterList.js';
+import { registerChapterRunFullProof } from '../studio-mcp/dist/tools/chapterRunFullProof.js';
+import { registerChapterGetTimeline } from '../studio-mcp/dist/tools/chapterGetTimeline.js';
 
 // Engine Bridge tools
 import { registerVerifyRuntimePaths } from '../engine-bridge-mcp/dist/tools/verifyRuntimePaths.js';
@@ -137,13 +146,30 @@ import { registerSignalContractAudit } from '../engine-bridge-mcp/dist/tools/sig
 import { registerExportAudit } from '../engine-bridge-mcp/dist/tools/exportAudit.js';
 import { registerAssetImportAudit } from '../engine-bridge-mcp/dist/tools/assetImportAudit.js';
 
+// Battle Scene tools (v1.5.0)
+import { setDb as setBattleSceneDb } from '../battle-scene-mcp/dist/server.js';
+import { registerBattleCreateSceneContract } from '../battle-scene-mcp/dist/tools/battleCreateSceneContract.js';
+import { registerBattleUpdateSceneContract } from '../battle-scene-mcp/dist/tools/battleUpdateSceneContract.js';
+import { registerBattleGetSceneContract } from '../battle-scene-mcp/dist/tools/battleGetSceneContract.js';
+import { registerBattleValidateSceneContract } from '../battle-scene-mcp/dist/tools/battleValidateSceneContract.js';
+import { registerBattleConfigureLayers } from '../battle-scene-mcp/dist/tools/battleConfigureLayers.js';
+import { registerBattleValidateLayerDependencies } from '../battle-scene-mcp/dist/tools/battleValidateLayerDependencies.js';
+import { registerBattleGetLayerStatus } from '../battle-scene-mcp/dist/tools/battleGetLayerStatus.js';
+import { registerBattleRunSceneProof } from '../battle-scene-mcp/dist/tools/battleRunSceneProof.js';
+import { registerBattleGetSceneReadability } from '../battle-scene-mcp/dist/tools/battleGetSceneReadability.js';
+import { registerBattleGetSceneNextStep } from '../battle-scene-mcp/dist/tools/battleGetSceneNextStep.js';
+import { registerBattleCaptureSnapshot } from '../battle-scene-mcp/dist/tools/battleCaptureSnapshot.js';
+import { registerBattleListSnapshots } from '../battle-scene-mcp/dist/tools/battleListSnapshots.js';
+import { registerBattleStartPlaytest } from '../battle-scene-mcp/dist/tools/battleStartPlaytest.js';
+import { registerBattleRecordPlaytestResult } from '../battle-scene-mcp/dist/tools/battleRecordPlaytestResult.js';
+
 // ─── Single DB connection ───────────────────────────────────
 const db = openDatabase();
 
-// ─── Single MCP server, 108 tools ───────────────────────────
+// ─── Single MCP server, 130 tools ───────────────────────────
 const server = new McpServer({
   name: 'game-foundry-mcp',
-  version: '1.4.0',
+  version: '1.6.0',
 });
 
 // Sprite Foundry — inspection (8)
@@ -278,6 +304,33 @@ registerStudioGetRepairStatus(server);
 registerStudioGetAdoptionPlan(server);
 registerStudioGetQualityState(server);
 registerStudioApproveRepair(server);
+
+// Chapter Spine (8) — v1.6.0
+registerChapterCreate(server);
+registerChapterGetHealth(server);
+registerChapterGetCoverageMap(server);
+registerChapterGetNextStep(server);
+registerChapterGetPlaytestStatus(server);
+registerChapterList(server);
+registerChapterRunFullProof(server);
+registerChapterGetTimeline(server);
+
+// Battle Scene (14) — v1.5.0
+setBattleSceneDb(db);
+registerBattleCreateSceneContract(server);
+registerBattleUpdateSceneContract(server);
+registerBattleGetSceneContract(server);
+registerBattleValidateSceneContract(server);
+registerBattleConfigureLayers(server);
+registerBattleValidateLayerDependencies(server);
+registerBattleGetLayerStatus(server);
+registerBattleRunSceneProof(server);
+registerBattleGetSceneReadability(server);
+registerBattleGetSceneNextStep(server);
+registerBattleCaptureSnapshot(server);
+registerBattleListSnapshots(server);
+registerBattleStartPlaytest(server);
+registerBattleRecordPlaytestResult(server);
 
 // ─── Connect ────────────────────────────────────────────────
 const transport = new StdioServerTransport();

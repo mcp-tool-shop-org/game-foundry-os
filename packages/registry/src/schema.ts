@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 
-const SCHEMA_VERSION = 8;
+const SCHEMA_VERSION = 11;
 
 const MIGRATIONS: string[] = [
   // Version 1: Initial schema
@@ -556,6 +556,175 @@ const MIGRATIONS: string[] = [
   CREATE INDEX IF NOT EXISTS idx_quality_domain_project ON quality_domain_states(project_id);
   CREATE INDEX IF NOT EXISTS idx_quality_domain_lookup ON quality_domain_states(project_id, domain);
   CREATE INDEX IF NOT EXISTS idx_adoption_plans_project ON adoption_plans(project_id);
+  `,
+
+  // Version 9: Battle Scene / Combat Presentation Spine
+  `
+  CREATE TABLE IF NOT EXISTS battle_scene_contracts (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    encounter_id    TEXT NOT NULL REFERENCES encounters(id),
+    scene_key       TEXT NOT NULL,
+
+    -- Board geometry
+    board_rows      INTEGER NOT NULL,
+    board_cols      INTEGER NOT NULL,
+    tile_size_px    INTEGER NOT NULL DEFAULT 64,
+    board_origin_x  INTEGER NOT NULL DEFAULT 128,
+    board_origin_y  INTEGER NOT NULL DEFAULT 96,
+
+    -- Camera/frame
+    viewport_width  INTEGER NOT NULL DEFAULT 1280,
+    viewport_height INTEGER NOT NULL DEFAULT 720,
+    camera_zoom     REAL NOT NULL DEFAULT 1.0,
+
+    -- Sprite expectations
+    sprite_target_size INTEGER NOT NULL DEFAULT 48,
+    unit_tile_ratio_min REAL NOT NULL DEFAULT 0.5,
+    unit_tile_ratio_max REAL NOT NULL DEFAULT 1.2,
+
+    -- HUD zones (JSON array of {name, x, y, w, h})
+    hud_zones_json  TEXT,
+
+    -- Overlay hierarchy priority (JSON array of layer keys)
+    overlay_order_json TEXT,
+
+    -- Readability thresholds
+    min_unit_contrast  REAL NOT NULL DEFAULT 40.0,
+    max_hud_overlap_pct REAL NOT NULL DEFAULT 0.15,
+
+    production_state TEXT NOT NULL DEFAULT 'draft',
+    created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS combat_ui_layers (
+    id              TEXT PRIMARY KEY,
+    contract_id     TEXT NOT NULL REFERENCES battle_scene_contracts(id),
+    layer_key       TEXT NOT NULL,
+    display_name    TEXT NOT NULL,
+    z_order         INTEGER NOT NULL,
+    activation      TEXT NOT NULL DEFAULT 'toggle',
+
+    -- What this layer renders (machine-readable contract)
+    shows_json      TEXT NOT NULL,
+
+    -- Visual parameters
+    color_scheme_json TEXT,
+    icon_set        TEXT,
+
+    -- Validation criteria
+    required_data_fields TEXT,
+    legibility_min_size INTEGER NOT NULL DEFAULT 16,
+
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS battle_scene_snapshots (
+    id              TEXT PRIMARY KEY,
+    contract_id     TEXT NOT NULL REFERENCES battle_scene_contracts(id),
+    snapshot_key    TEXT NOT NULL,
+
+    -- Scene state description
+    state_desc_json TEXT NOT NULL,
+
+    -- Computed layout (unit positions in pixel space, HUD rects, active overlays)
+    layout_json     TEXT NOT NULL,
+
+    -- Optional screenshot reference
+    screenshot_path TEXT,
+    content_hash    TEXT,
+
+    -- Proof results for this snapshot
+    proof_run_id    TEXT REFERENCES proof_runs(id),
+
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS playtest_sessions (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    encounter_id    TEXT NOT NULL REFERENCES encounters(id),
+    contract_id     TEXT REFERENCES battle_scene_contracts(id),
+
+    session_state   TEXT NOT NULL DEFAULT 'started',
+    snapshots_captured INTEGER NOT NULL DEFAULT 0,
+    read_failures   INTEGER NOT NULL DEFAULT 0,
+
+    -- Read failure log
+    failures_json   TEXT,
+
+    -- Quality feedback
+    quality_verdict TEXT,
+    notes           TEXT,
+
+    started_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    completed_at    TEXT
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_scene_contracts_project ON battle_scene_contracts(project_id);
+  CREATE INDEX IF NOT EXISTS idx_scene_contracts_encounter ON battle_scene_contracts(encounter_id);
+  CREATE INDEX IF NOT EXISTS idx_ui_layers_contract ON combat_ui_layers(contract_id);
+  CREATE INDEX IF NOT EXISTS idx_ui_layers_key ON combat_ui_layers(layer_key);
+  CREATE INDEX IF NOT EXISTS idx_scene_snapshots_contract ON battle_scene_snapshots(contract_id);
+  CREATE INDEX IF NOT EXISTS idx_scene_snapshots_key ON battle_scene_snapshots(snapshot_key);
+  CREATE INDEX IF NOT EXISTS idx_playtest_project ON playtest_sessions(project_id);
+  CREATE INDEX IF NOT EXISTS idx_playtest_encounter ON playtest_sessions(encounter_id);
+  `,
+
+  // Version 10: Chapter Spine
+  `
+  CREATE TABLE IF NOT EXISTS chapters (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    display_name    TEXT NOT NULL,
+    sort_order      INTEGER NOT NULL DEFAULT 0,
+    intent_summary  TEXT,
+    required_encounter_count INTEGER,
+    required_playtest_pass INTEGER NOT NULL DEFAULT 0,
+    production_state TEXT NOT NULL DEFAULT 'draft',
+    created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS chapter_health_snapshots (
+    id              TEXT PRIMARY KEY,
+    chapter_id      TEXT NOT NULL REFERENCES chapters(id),
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    overall_status  TEXT NOT NULL DEFAULT 'incomplete',
+    weakest_domain  TEXT,
+    blocker_summary TEXT,
+    encounter_coverage_json TEXT,
+    domain_scores_json TEXT,
+    next_action     TEXT,
+    next_action_target TEXT,
+    computed_at     TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_chapters_project ON chapters(project_id);
+  CREATE INDEX IF NOT EXISTS idx_chapters_sort ON chapters(project_id, sort_order);
+  CREATE INDEX IF NOT EXISTS idx_chapter_health_chapter ON chapter_health_snapshots(chapter_id);
+  CREATE INDEX IF NOT EXISTS idx_chapter_health_project ON chapter_health_snapshots(project_id);
+  `,
+
+  // Version 11: Playable Chapter Loop — verdicts
+  `
+  CREATE TABLE IF NOT EXISTS chapter_verdicts (
+    id                TEXT PRIMARY KEY,
+    chapter_id        TEXT NOT NULL REFERENCES chapters(id),
+    project_id        TEXT NOT NULL REFERENCES projects(id),
+    verdict           TEXT NOT NULL DEFAULT 'incomplete',
+    verdict_reason    TEXT,
+    blocking_encounter TEXT,
+    blocking_domain   TEXT,
+    prove_bundle_json TEXT,
+    next_action       TEXT,
+    next_action_target TEXT,
+    created_at        TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_chapter_verdicts_chapter ON chapter_verdicts(chapter_id);
+  CREATE INDEX IF NOT EXISTS idx_chapter_verdicts_project ON chapter_verdicts(project_id);
   `,
 ];
 

@@ -5,6 +5,13 @@ import path from 'node:path';
 import os from 'node:os';
 import { openDatabase, upsertProject } from '@mcptoolshop/game-foundry-registry';
 import {
+  createSceneContract,
+  configureDefaultLayers,
+  captureAllSnapshots,
+  startPlaytest,
+  completePlaytest,
+} from '@mcptoolshop/battle-scene-core';
+import {
   registerTemplate,
   getTemplate,
   listTemplates,
@@ -446,6 +453,12 @@ describe('next step', () => {
       INSERT INTO encounters (id, project_id, chapter, label)
       VALUES ('enc1', 'test-project', 'ch1', 'Test Encounter')
     `).run();
+    // Satisfy battle scene contract for the encounter
+    const bsc = createSceneContract(db, 'test-project', 'enc1');
+    configureDefaultLayers(db, bsc.id);
+    captureAllSnapshots(db, bsc.id);
+    const ptSession = startPlaytest(db, 'test-project', 'enc1');
+    completePlaytest(db, ptSession.id, 'pass');
     // V3 engine checks for proof runs before allowing continue_production —
     // add a proof run so it doesn't suggest run_proof_suite
     db.prepare(`

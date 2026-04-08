@@ -12,6 +12,7 @@
   "dependencies": {
     "@mcptoolshop/game-foundry-registry": "*",
     "@mcptoolshop/engine-bridge-mcp": "*",
+    "@mcptoolshop/battle-scene-core": "*",
     "better-sqlite3": "^11.0.0"
   },
   "author": "mcp-tool-shop",

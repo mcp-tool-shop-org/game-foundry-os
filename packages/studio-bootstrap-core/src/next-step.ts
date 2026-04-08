@@ -23,6 +23,7 @@ const DOMAIN_WHY: Record<QualityDomain, string> = {
   runtime_integrity: 'The game cannot launch without this runtime component',
   visual_integrity: 'Pixel-art rendering will be broken or degraded in engine',
   encounter_integrity: 'Combat encounters will be missing or broken at runtime',
+  presentation_integrity: 'The battle scene is unreadable or visually broken for the player',
   canon_integrity: 'Design documentation is disconnected from production state',
   shipping_integrity: 'The game cannot be exported or distributed',
 };
@@ -33,8 +34,9 @@ const DOMAIN_WEIGHT: Record<QualityDomain, number> = {
   runtime_integrity: 1,
   visual_integrity: 2,
   encounter_integrity: 3,
-  canon_integrity: 4,
-  shipping_integrity: 5,
+  presentation_integrity: 4,
+  canon_integrity: 5,
+  shipping_integrity: 6,
 };
 
 /** Sort findings by domain weight (game impact), then severity */

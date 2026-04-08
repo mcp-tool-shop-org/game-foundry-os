@@ -14,6 +14,13 @@ import {
   seedProjectRegistry,
   seedVault,
 } from '@mcptoolshop/studio-bootstrap-core';
+import {
+  createSceneContract,
+  configureDefaultLayers,
+  captureAllSnapshots,
+  startPlaytest,
+  completePlaytest,
+} from '@mcptoolshop/battle-scene-core';
 
 let db: Database.Database;
 let tmpDir: string;
@@ -94,6 +101,12 @@ describe('next-step V3', () => {
     // Add a character and encounter so it doesn't suggest create_character
     db.prepare("INSERT INTO characters (id, project_id, display_name) VALUES ('c1', 'proj-ns3', 'Test')").run();
     db.prepare("INSERT INTO encounters (id, project_id, chapter, label) VALUES ('e1', 'proj-ns3', 'ch1', 'Test')").run();
+    // Satisfy battle scene contract so presentation_integrity doesn't fire
+    const contract = createSceneContract(db, 'proj-ns3', 'e1');
+    configureDefaultLayers(db, contract.id);
+    captureAllSnapshots(db, contract.id);
+    const session = startPlaytest(db, 'proj-ns3', 'e1');
+    completePlaytest(db, session.id, 'pass');
     // No proof runs exist
     const next = getStudioNextStep(db, 'proj-ns3');
     expect(next.action).toBe('run_proof_suite');
@@ -121,6 +134,12 @@ describe('next-step V3', () => {
     makeReady();
     db.prepare("INSERT INTO characters (id, project_id, display_name) VALUES ('c1', 'proj-ns3', 'Test')").run();
     db.prepare("INSERT INTO encounters (id, project_id, chapter, label) VALUES ('e1', 'proj-ns3', 'ch1', 'Test')").run();
+    // Satisfy battle scene contract
+    const contract = createSceneContract(db, 'proj-ns3', 'e1');
+    configureDefaultLayers(db, contract.id);
+    captureAllSnapshots(db, contract.id);
+    const session = startPlaytest(db, 'proj-ns3', 'e1');
+    completePlaytest(db, session.id, 'pass');
     // Add a proof run so it doesn't suggest run_proof_suite
     db.prepare("INSERT INTO proof_runs (id, project_id, scope_type, scope_id, result, blocking_failures, warning_count) VALUES ('pr1', 'proj-ns3', 'variant', 'v1', 'pass', 0, 0)").run();
     const next = getStudioNextStep(db, 'proj-ns3');

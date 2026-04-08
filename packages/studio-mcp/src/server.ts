@@ -25,6 +25,16 @@ import { registerStudioGetAdoptionPlan } from './tools/studioGetAdoptionPlan.js'
 import { registerStudioGetQualityState } from './tools/studioGetQualityState.js';
 import { registerStudioApproveRepair } from './tools/studioApproveRepair.js';
 
+// Chapter Spine tools (v1.6.0)
+import { registerChapterCreate } from './tools/chapterCreate.js';
+import { registerChapterGetHealth } from './tools/chapterGetHealth.js';
+import { registerChapterGetCoverageMap } from './tools/chapterGetCoverageMap.js';
+import { registerChapterGetNextStep } from './tools/chapterGetNextStep.js';
+import { registerChapterGetPlaytestStatus } from './tools/chapterGetPlaytestStatus.js';
+import { registerChapterList } from './tools/chapterList.js';
+import { registerChapterRunFullProof } from './tools/chapterRunFullProof.js';
+import { registerChapterGetTimeline } from './tools/chapterGetTimeline.js';
+
 let _db: Database.Database | undefined;
 
 export function getDb(): Database.Database {
@@ -67,6 +77,16 @@ export function createServer(): McpServer {
   registerStudioGetAdoptionPlan(server);
   registerStudioGetQualityState(server);
   registerStudioApproveRepair(server);
+
+  // Chapter Spine (v1.6.0)
+  registerChapterCreate(server);
+  registerChapterGetHealth(server);
+  registerChapterGetCoverageMap(server);
+  registerChapterGetNextStep(server);
+  registerChapterGetPlaytestStatus(server);
+  registerChapterList(server);
+  registerChapterRunFullProof(server);
+  registerChapterGetTimeline(server);
 
   return server;
 }

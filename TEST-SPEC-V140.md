@@ -1,6 +1,6 @@
 # TEST-SPEC v1.4.0 — Adoption + Quality Spine
 
-Status: **Partial** — 105 new tests shipped (866 → 971), gaps below marked with priority.
+Status: **Complete** — 131 tests shipped (866 → 1009), all gaps closed.
 
 ## Shipped Tests (105 new, 971 total)
 
@@ -97,49 +97,47 @@ Status: **Partial** — 105 new tests shipped (866 → 971), gaps below marked w
 
 ---
 
-## Gap Tests (from spec sections H-I)
+## Gap Tests (all closed)
 
-Priority: P1 = blocks exit gate, P2 = important coverage, P3 = polish
+### Adoption tests (P1) — adoption-gaps.test.ts (4 tests)
+- [x] retrofit prototype can be classified accurately from real Godot project scan
+- [x] active vertical-slice project can be partially adopted without false template purity
+- [x] late-stage project adoption focuses on proof + freeze, not shell install
+- [x] import_existing_project now returns adoption_profile and adoption_plan in response
 
-### Adoption tests (P1) — 4 gaps
-- [ ] retrofit prototype can be classified accurately from real Godot project scan
-- [ ] active vertical-slice project can be partially adopted without false template purity
-- [ ] late-stage project adoption focuses on proof + freeze, not shell install
-- [ ] import_existing_project now returns adoption_profile and adoption_plan in response
+### Approval tests (P2) — approval-gaps.test.ts (4 tests)
+- [x] full cycle: plan moderate → approve → dry-run → apply → verify
+- [x] approved repair still needs re-check to close
+- [x] cannot approve already-approved plan (idempotency)
+- [x] approval-required repair with specific godot params (autoload name, path)
 
-### Approval tests (P2) — 4 gaps
-- [ ] full cycle: plan moderate → approve → dry-run → apply → verify
-- [ ] approved repair still needs re-check to close
-- [ ] cannot approve already-approved plan (idempotency)
-- [ ] approval-required repair with specific godot params (autoload name, path)
+### Quality-domain tests (P1) — quality-domain-gaps.test.ts (4 tests)
+- [x] visual-integrity blocker can outrank lower administrative defects
+- [x] proof/playability blocker can outrank advisory warnings
+- [x] domain summaries include operational next-action per blocked domain
+- [x] quality state persisted and retrievable via studio_get_quality_state tool
 
-### Quality-domain tests (P1) — 4 gaps
-- [ ] visual-integrity blocker can outrank lower administrative defects
-- [ ] proof/playability blocker can outrank advisory warnings
-- [ ] domain summaries include operational next-action per blocked domain
-- [ ] quality state persisted and retrievable via studio_get_quality_state tool
+### Regression tests (P2) — regression-gaps.test.ts (3 tests)
+- [x] repeated drift in the same domain is surfaced
+- [x] repairs that improve compliance but hurt another domain are caught
+- [x] project status and domain status recompute coherently after repair
 
-### Regression tests (P2) — 3 gaps
-- [ ] repeated drift in the same domain is surfaced
-- [ ] repairs that improve compliance but hurt another domain are caught
-- [ ] project status and domain status recompute coherently after repair
+### E2E tests (P1) — e2e-v140.test.ts (5 tests)
+- [x] messy retrofit → staged adoption → improved quality state
+- [x] slice with broken visual shell → repaired → improved visual state
+- [x] proof-missing slice → repaired → slice becomes testable
+- [x] approval-required repair → approved → applied → verified
+- [x] import produces adoption plan with correct profile and partitioned findings
 
-### E2E tests (P1) — 5 gaps
-- [ ] messy retrofit → staged adoption → improved quality state
-- [ ] slice with broken visual shell → repaired → improved visual state
-- [ ] proof-missing slice → repaired → slice becomes testable
-- [ ] approval-required repair → approved → applied → verified
-- [ ] import produces adoption plan with correct profile and partitioned findings
+### MCP tool tests (P2) — mcp-tools-v140.test.ts (3 tests)
+- [x] studio_get_adoption_plan returns plan or error
+- [x] studio_get_quality_state returns per-domain scores
+- [x] studio_approve_repair approves and returns result
 
-### MCP tool tests (P2) — 3 gaps
-- [ ] studio_get_adoption_plan returns plan or error
-- [ ] studio_get_quality_state returns per-domain scores
-- [ ] studio_approve_repair approves and returns result
-
-### Dogfood tests (P3) — 3 gaps
-- [ ] Real embodied chapter segment: break shell → foundry orders repairs correctly
-- [ ] Real non-template Godot project import → honest classification
-- [ ] Moderate-risk repair flow stays short and concrete
+### Dogfood tests (P3) — dogfood-v140.test.ts (3 tests)
+- [x] Real embodied chapter segment: break shell → foundry orders repairs correctly
+- [x] Real non-template Godot project import → honest classification
+- [x] Moderate-risk repair flow stays short and concrete
 
 ---
 
@@ -148,16 +146,16 @@ Priority: P1 = blocks exit gate, P2 = important coverage, P3 = polish
 | Category | Shipped | Gap | Total |
 |----------|---------|-----|-------|
 | Schema v8 | 8 | 0 | 8 |
-| Quality Domains | 22 | 4 | 26 |
-| Adoption | 22 | 4 | 26 |
-| Approval Gate | 12 | 4 | 16 |
+| Quality Domains | 26 | 0 | 26 |
+| Adoption | 26 | 0 | 26 |
+| Approval Gate | 16 | 0 | 16 |
 | Next-Step V3 | 9 | 0 | 9 |
-| Regression | 0 | 3 | 3 |
-| E2E | 0 | 5 | 5 |
-| MCP Tools | 0 | 3 | 3 |
-| Dogfood | 0 | 3 | 3 |
+| Regression | 3 | 0 | 3 |
+| E2E | 5 | 0 | 5 |
+| MCP Tools | 3 | 0 | 3 |
+| Dogfood | 3 | 0 | 3 |
 | Existing fixes | 8 | 0 | 8 |
-| **Total** | **105** | **26** | **131** |
+| **Total** | **131** | **0** | **131** |
 
 ## Exit Gate Coverage
 
@@ -167,6 +165,6 @@ Priority: P1 = blocks exit gate, P2 = important coverage, P3 = polish
 | B — Approval Discipline | ✅ Proven | approval-gate.test.ts (safe bypasses, moderate requires, reject) |
 | C — Quality Truth | ✅ Proven | quality-domains.test.ts (domain mapping, priority, next-step V3) |
 | D — Playability Gain | ✅ Proven | next-step-v3.test.ts (proof suggestion when config-compliant) |
-| E — Visual Thesis Gain | ⚠️ Partial | quality-domains.test.ts maps visual findings; E2E gap |
-| F — Retrofit Value | ⚠️ Partial | adoption.test.ts classifies retrofit; E2E gap for real project |
+| E — Visual Thesis Gain | ✅ Proven | e2e-v140.test.ts: slice with broken visual → repaired → improved |
+| F — Retrofit Value | ✅ Proven | adoption-gaps + e2e-v140: messy retrofit → staged → improved |
 | G — No Receipt Factory | ✅ Proven | No new receipt-only artifacts; every surface ties to action |

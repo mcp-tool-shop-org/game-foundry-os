@@ -3,6 +3,7 @@ import type { BootstrapDiagnosticResult, DiagnosticFinding } from '@mcptoolshop/
 import { getProject } from '@mcptoolshop/game-foundry-registry';
 import { parseProjectGodot, auditImportSettings } from '@mcptoolshop/engine-bridge-mcp/lib';
 import type { GodotProjectConfig } from '@mcptoolshop/engine-bridge-mcp/lib';
+import { runBattleSceneDiagnostics } from '@mcptoolshop/battle-scene-core';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -228,6 +229,14 @@ export function runDiagnostics(
       repairable: true,
       repair_action: 'studio_install_proof_shell',
     });
+  }
+
+  // ── 9. Battle scene presentation ─────────────────────────
+  try {
+    const battleFindings = runBattleSceneDiagnostics(db, projectId);
+    findings.push(...battleFindings);
+  } catch {
+    // Battle scene diagnostics are non-critical — don't block on errors
   }
 
   // ── Aggregate ────────────────────────────────────────────

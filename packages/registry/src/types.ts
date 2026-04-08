@@ -838,6 +838,7 @@ export type QualityDomain =
   | 'visual_integrity'
   | 'runtime_integrity'
   | 'encounter_integrity'
+  | 'presentation_integrity'
   | 'canon_integrity'
   | 'playability_integrity'
   | 'shipping_integrity';
@@ -911,6 +912,132 @@ export interface StudioNextStepV3 extends StudioNextStepV2 {
   why_it_matters: string;
 }
 
+// ─── v1.5.0 Battle Scene / Combat Presentation Spine ────
+
+/** Battle scene contract production states */
+export type BattleSceneProductionState =
+  | 'draft'
+  | 'contract_defined'
+  | 'layers_configured'
+  | 'snapshots_captured'
+  | 'proof_passed'
+  | 'frozen';
+
+/** Combat UI layer keys */
+export type CombatUILayerKey = 'intent' | 'threat' | 'forecast' | 'terrain' | 'planning_undo';
+
+/** Layer activation modes */
+export type LayerActivation = 'always_on' | 'toggle' | 'hover' | 'selection';
+
+/** Canonical battle snapshot states */
+export type BattleSnapshotKey = 'neutral' | 'threat_on' | 'forecast' | 'enemy_turn' | 'pre_commit';
+
+/** Playtest session states */
+export type PlaytestSessionState = 'started' | 'capturing' | 'completed' | 'abandoned';
+
+/** Playtest quality verdict */
+export type PlaytestVerdict = 'pass' | 'fail' | 'marginal';
+
+/** Read failure types during playtest */
+export type ReadFailureType =
+  | 'unit_invisible'
+  | 'intent_unclear'
+  | 'threat_ambiguous'
+  | 'forecast_missing'
+  | 'terrain_unreadable'
+  | 'hud_occlusion'
+  | 'overlay_collision'
+  | 'turn_order_unclear'
+  | 'undo_unavailable';
+
+/** HUD zone rectangle */
+export interface HudZone {
+  name: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** Read failure entry in a playtest session */
+export interface ReadFailureEntry {
+  snapshot_key: BattleSnapshotKey;
+  failure_type: ReadFailureType;
+  description: string;
+  timestamp?: string;
+}
+
+/** Battle scene contract row (DB table) */
+export interface BattleSceneContractRow {
+  id: string;
+  project_id: string;
+  encounter_id: string;
+  scene_key: string;
+  board_rows: number;
+  board_cols: number;
+  tile_size_px: number;
+  board_origin_x: number;
+  board_origin_y: number;
+  viewport_width: number;
+  viewport_height: number;
+  camera_zoom: number;
+  sprite_target_size: number;
+  unit_tile_ratio_min: number;
+  unit_tile_ratio_max: number;
+  hud_zones_json: string | null;
+  overlay_order_json: string | null;
+  min_unit_contrast: number;
+  max_hud_overlap_pct: number;
+  production_state: BattleSceneProductionState;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Combat UI layer row (DB table) */
+export interface CombatUILayerRow {
+  id: string;
+  contract_id: string;
+  layer_key: CombatUILayerKey;
+  display_name: string;
+  z_order: number;
+  activation: LayerActivation;
+  shows_json: string;
+  color_scheme_json: string | null;
+  icon_set: string | null;
+  required_data_fields: string | null;
+  legibility_min_size: number;
+  created_at: string;
+}
+
+/** Battle scene snapshot row (DB table) */
+export interface BattleSceneSnapshotRow {
+  id: string;
+  contract_id: string;
+  snapshot_key: BattleSnapshotKey;
+  state_desc_json: string;
+  layout_json: string;
+  screenshot_path: string | null;
+  content_hash: string | null;
+  proof_run_id: string | null;
+  created_at: string;
+}
+
+/** Playtest session row (DB table) */
+export interface PlaytestSessionRow {
+  id: string;
+  project_id: string;
+  encounter_id: string;
+  contract_id: string | null;
+  session_state: PlaytestSessionState;
+  snapshots_captured: number;
+  read_failures: number;
+  failures_json: string | null;
+  quality_verdict: PlaytestVerdict | null;
+  notes: string | null;
+  started_at: string;
+  completed_at: string | null;
+}
+
 /** Quality domain state row (DB table) */
 export interface QualityDomainStateRow {
   id: string;
@@ -934,4 +1061,81 @@ export interface AdoptionPlanRow {
   completion_json: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// ─── v1.6.0 Chapter Spine ───────────────────────────────
+
+/** Chapter production lifecycle states */
+export type ChapterProductionState =
+  | 'draft'
+  | 'encounters_ready'
+  | 'scenes_ready'
+  | 'proof_passed'
+  | 'playtest_passed'
+  | 'frozen';
+
+/** Chapter health status */
+export type ChapterHealthStatus = 'ready' | 'blocked' | 'incomplete' | 'drifted';
+
+/** Chapter row (DB table) */
+export interface ChapterRow {
+  id: string;
+  project_id: string;
+  display_name: string;
+  sort_order: number;
+  intent_summary: string | null;
+  required_encounter_count: number | null;
+  required_playtest_pass: number;
+  production_state: ChapterProductionState;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Chapter health snapshot row (DB table) */
+export interface ChapterHealthSnapshotRow {
+  id: string;
+  chapter_id: string;
+  project_id: string;
+  overall_status: ChapterHealthStatus;
+  weakest_domain: string | null;
+  blocker_summary: string | null;
+  encounter_coverage_json: string | null;
+  domain_scores_json: string | null;
+  next_action: string | null;
+  next_action_target: string | null;
+  computed_at: string;
+}
+
+/** Per-encounter coverage entry in a chapter health snapshot */
+export interface EncounterCoverageEntry {
+  encounter_id: string;
+  label: string;
+  has_encounter_contract: boolean;
+  has_battle_scene_contract: boolean;
+  has_layers: boolean;
+  has_snapshots: boolean;
+  has_proof_pass: boolean;
+  has_playtest_pass: boolean;
+  weakest_domain: string | null;
+  major_findings: number;
+}
+
+// ─── v1.7.0 Playable Chapter Loop ───────────────────────
+
+/** Chapter verdict states */
+export type ChapterVerdict = 'playable' | 'blocked' | 'incomplete' | 'drifted';
+
+/** Chapter verdict row (DB table) */
+export interface ChapterVerdictRow {
+  id: string;
+  chapter_id: string;
+  project_id: string;
+  verdict: ChapterVerdict;
+  verdict_reason: string | null;
+  blocking_encounter: string | null;
+  blocking_domain: string | null;
+  prove_bundle_json: string | null;
+  next_action: string | null;
+  next_action_target: string | null;
+  created_at: string;
 }

@@ -11,3 +11,5 @@ export * from './models/variant.js';
 export * from './models/encounter.js';
 export * from './models/pack.js';
 export * from './models/freeze.js';
+export * from './models/battle-scene.js';
+export * from './models/chapter.js';

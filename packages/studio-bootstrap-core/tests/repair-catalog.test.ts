@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { REPAIR_CATALOG, getRepairContract, findingToActionKey } from '@mcptoolshop/studio-bootstrap-core';
 
 describe('repair catalog', () => {
-  it('has 10 entries', () => {
-    expect(REPAIR_CATALOG.size).toBe(10);
+  it('has 14 entries', () => {
+    expect(REPAIR_CATALOG.size).toBe(14);
   });
 
   it('every entry has valid contract fields', () => {

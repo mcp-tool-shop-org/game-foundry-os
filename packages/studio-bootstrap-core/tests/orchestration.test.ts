@@ -16,6 +16,13 @@ import {
   getStudioNextStep,
   runDiagnostics,
 } from '@mcptoolshop/studio-bootstrap-core';
+import {
+  createSceneContract,
+  configureDefaultLayers,
+  captureAllSnapshots,
+  startPlaytest,
+  completePlaytest,
+} from '@mcptoolshop/battle-scene-core';
 
 let db: Database.Database;
 let tmpDir: string;
@@ -302,6 +309,12 @@ describe('deterministic next-step', () => {
       INSERT INTO encounters (id, project_id, chapter, label)
       VALUES ('enc-ns', 'test-project', 'ch1', 'Test Encounter')
     `).run();
+    // Satisfy battle scene contract for the encounter
+    const contract = createSceneContract(db, 'test-project', 'enc-ns');
+    configureDefaultLayers(db, contract.id);
+    captureAllSnapshots(db, contract.id);
+    const session = startPlaytest(db, 'test-project', 'enc-ns');
+    completePlaytest(db, session.id, 'pass');
     // V3 engine checks for proof runs before allowing continue_production —
     // add a proof run so it doesn't suggest run_proof_suite
     db.prepare(`

@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@mcptoolshop/encounter-doctrine-core": "*",
     "@mcptoolshop/game-foundry-registry": "*",
     "zod": "^3.23.0"
   },

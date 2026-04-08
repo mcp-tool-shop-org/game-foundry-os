@@ -38,7 +38,7 @@ describe('schema migration', () => {
 
   it('records schema version', () => {
     const row = db.prepare('SELECT MAX(version) as v FROM schema_version').get() as { v: number };
-    expect(row.v).toBe(2);
+    expect(row.v).toBe(3);
   });
 
   it('sets WAL mode (or memory equivalent)', () => {

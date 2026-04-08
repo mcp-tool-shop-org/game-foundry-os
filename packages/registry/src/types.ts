@@ -47,6 +47,30 @@ export type ArtifactType =
 /** Portrait states */
 export type PortraitState = 'none' | 'missing' | 'attached' | 'complete';
 
+/** Encounter production lifecycle states */
+export type EncounterProductionState =
+  | 'draft'
+  | 'intent_defined'
+  | 'roster_defined'
+  | 'formation_defined'
+  | 'rules_defined'
+  | 'validated_structural'
+  | 'dependencies_resolved'
+  | 'manifest_exported'
+  | 'engine_synced'
+  | 'runtime_verified'
+  | 'proved'
+  | 'frozen';
+
+/** Encounter types */
+export type EncounterType = 'standard' | 'boss' | 'miniboss' | 'gauntlet';
+
+/** Encounter rule types */
+export type EncounterRuleType = 'phase_transition' | 'reinforcement' | 'win_condition' | 'loss_condition' | 'special';
+
+/** Encounter validation types */
+export type EncounterValidationType = 'bounds' | 'formation' | 'variants' | 'packs' | 'rules' | 'runtime';
+
 // ─── Row types (match SQLite tables) ───────────────────────
 
 export interface ProjectRow {
@@ -135,6 +159,11 @@ export interface EncounterRow {
   last_validated_at: string | null;
   runtime_sync_state: SyncState;
   proving_state: ProofState;
+  production_state: EncounterProductionState;
+  display_name: string | null;
+  encounter_type: EncounterType;
+  route_tag: string | null;
+  intent_summary: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -154,6 +183,12 @@ export interface EncounterEnemyRow {
   move_range: number | null;
   engine_data: string | null;
   sort_order: number;
+  role_tag: string | null;
+  team: string;
+  spawn_group: string | null;
+  facing: string | null;
+  engine_profile_json: string | null;
+  character_id: string | null;
 }
 
 export interface FreezeLogRow {
@@ -219,6 +254,62 @@ export interface StateEventRow {
   tool_name: string | null;
   payload_json: string | null;
   created_at: string;
+}
+
+// ─── Phase 2 row types ─────────────────────────────────────
+
+export interface EncounterRuleRow {
+  id: string;
+  encounter_id: string;
+  rule_type: EncounterRuleType;
+  rule_key: string;
+  rule_payload_json: string | null;
+  created_at: string;
+}
+
+export interface EncounterExportRow {
+  id: string;
+  encounter_id: string;
+  project_id: string;
+  manifest_path: string;
+  content_hash: string | null;
+  format_version: string;
+  export_payload_json: string | null;
+  is_canonical: number;
+  created_at: string;
+}
+
+export interface EncounterSyncReceiptRow {
+  id: string;
+  encounter_id: string;
+  project_id: string;
+  target_path: string;
+  synced_files_json: string | null;
+  verification_status: string;
+  receipt_hash: string | null;
+  created_at: string;
+}
+
+export interface EncounterValidationRunRow {
+  id: number;
+  encounter_id: string;
+  validation_type: EncounterValidationType;
+  result: string;
+  details_json: string | null;
+  created_at: string;
+}
+
+export interface EncounterNextStepResult {
+  encounter_id: string;
+  production_state: EncounterProductionState;
+  runtime_sync_state: string;
+  unit_count: number;
+  missing_validations: string[];
+  missing_dependencies: string[];
+  export_status: string;
+  sync_status: string;
+  next_action: string;
+  blockers: string[];
 }
 
 // ─── Phase 1 API types ─────────────────────────────────────

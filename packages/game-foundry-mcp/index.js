@@ -38,6 +38,23 @@ import { registerGetEncounter } from '../encounter-doctrine-mcp/dist/tools/getEn
 import { registerRegisterEncounter } from '../encounter-doctrine-mcp/dist/tools/registerEncounter.js';
 import { registerExportManifest } from '../encounter-doctrine-mcp/dist/tools/exportManifest.js';
 
+// Encounter Doctrine workflow tools (Phase 2)
+import { registerDoctrineCreate } from '../encounter-doctrine-mcp/dist/tools/doctrineCreate.js';
+import { registerDoctrineDefineIntent } from '../encounter-doctrine-mcp/dist/tools/doctrineDefineIntent.js';
+import { registerDoctrineAddUnit } from '../encounter-doctrine-mcp/dist/tools/doctrineAddUnit.js';
+import { registerDoctrineMoveUnit } from '../encounter-doctrine-mcp/dist/tools/doctrineMoveUnit.js';
+import { registerDoctrineValidateStructural } from '../encounter-doctrine-mcp/dist/tools/doctrineValidateStructural.js';
+import { registerDoctrineGetNextStep } from '../encounter-doctrine-mcp/dist/tools/doctrineGetNextStep.js';
+import { registerDoctrineAttachRule } from '../encounter-doctrine-mcp/dist/tools/doctrineAttachRule.js';
+import { registerDoctrineValidateDependencies } from '../encounter-doctrine-mcp/dist/tools/doctrineValidateDependencies.js';
+import { registerDoctrineExportManifest } from '../encounter-doctrine-mcp/dist/tools/doctrineExportManifest.js';
+import { registerDoctrineSyncToEngine } from '../encounter-doctrine-mcp/dist/tools/doctrineSyncToEngine.js';
+import { registerDoctrineGetTimeline } from '../encounter-doctrine-mcp/dist/tools/doctrineGetTimeline.js';
+import { registerDoctrineGetChapterMatrix } from '../encounter-doctrine-mcp/dist/tools/doctrineGetChapterMatrix.js';
+import { registerDoctrineDiffRuntime } from '../encounter-doctrine-mcp/dist/tools/doctrineDiffRuntime.js';
+import { registerDoctrineRemoveUnit } from '../encounter-doctrine-mcp/dist/tools/doctrineRemoveUnit.js';
+import { registerDoctrineClone } from '../encounter-doctrine-mcp/dist/tools/doctrineClone.js';
+
 // Engine Bridge tools
 import { registerVerifyRuntimePaths } from '../engine-bridge-mcp/dist/tools/verifyRuntimePaths.js';
 import { registerReportPlaceholders } from '../engine-bridge-mcp/dist/tools/reportPlaceholders.js';
@@ -49,10 +66,10 @@ import { registerSyncEncounterManifests } from '../engine-bridge-mcp/dist/tools/
 // ─── Single DB connection ───────────────────────────────────
 const db = openDatabase();
 
-// ─── Single MCP server, 21 tools ────────────────────────────
+// ─── Single MCP server, 48 tools ────────────────────────────
 const server = new McpServer({
   name: 'game-foundry-mcp',
-  version: '0.1.0',
+  version: '0.2.0',
 });
 
 // Sprite Foundry — inspection (8)
@@ -79,7 +96,7 @@ registerFoundryGetCharacterTimeline(server, db);
 registerFoundrySyncPackToEngine(server, db);
 registerFoundryAttachPortraitSet(server, db);
 
-// Encounter Doctrine (7)
+// Encounter Doctrine — inspection (7)
 setDb(db);
 registerValidateBounds(server);
 registerValidateFormation(server);
@@ -88,6 +105,23 @@ registerListEncounters(server);
 registerGetEncounter(server);
 registerRegisterEncounter(server);
 registerExportManifest(server);
+
+// Encounter Doctrine — workflow (15)
+registerDoctrineCreate(server);
+registerDoctrineDefineIntent(server);
+registerDoctrineAddUnit(server);
+registerDoctrineMoveUnit(server);
+registerDoctrineValidateStructural(server);
+registerDoctrineGetNextStep(server);
+registerDoctrineAttachRule(server);
+registerDoctrineValidateDependencies(server);
+registerDoctrineExportManifest(server);
+registerDoctrineSyncToEngine(server);
+registerDoctrineGetTimeline(server);
+registerDoctrineGetChapterMatrix(server);
+registerDoctrineDiffRuntime(server);
+registerDoctrineRemoveUnit(server);
+registerDoctrineClone(server);
 
 // Engine Bridge (6)
 registerVerifyRuntimePaths(server, db);

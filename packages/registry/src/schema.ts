@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 const MIGRATIONS: string[] = [
   // Version 1: Initial schema
@@ -199,6 +199,68 @@ const MIGRATIONS: string[] = [
   CREATE INDEX IF NOT EXISTS idx_artifacts_type ON artifacts(artifact_type, variant_id);
   CREATE INDEX IF NOT EXISTS idx_events_entity ON state_events(entity_type, entity_id);
   CREATE INDEX IF NOT EXISTS idx_events_time ON state_events(created_at);
+  `,
+
+  // Version 3: Encounter Doctrine Workflow — encounter lifecycle, rules, exports, sync receipts
+  `
+  ALTER TABLE encounters ADD COLUMN production_state TEXT NOT NULL DEFAULT 'draft';
+  ALTER TABLE encounters ADD COLUMN display_name TEXT;
+  ALTER TABLE encounters ADD COLUMN encounter_type TEXT NOT NULL DEFAULT 'standard';
+  ALTER TABLE encounters ADD COLUMN route_tag TEXT;
+  ALTER TABLE encounters ADD COLUMN intent_summary TEXT;
+
+  ALTER TABLE encounter_enemies ADD COLUMN role_tag TEXT;
+  ALTER TABLE encounter_enemies ADD COLUMN team TEXT NOT NULL DEFAULT 'enemy';
+  ALTER TABLE encounter_enemies ADD COLUMN spawn_group TEXT;
+  ALTER TABLE encounter_enemies ADD COLUMN facing TEXT;
+  ALTER TABLE encounter_enemies ADD COLUMN engine_profile_json TEXT;
+  ALTER TABLE encounter_enemies ADD COLUMN character_id TEXT;
+
+  CREATE TABLE IF NOT EXISTS encounter_rules (
+    id              TEXT PRIMARY KEY,
+    encounter_id    TEXT NOT NULL REFERENCES encounters(id),
+    rule_type       TEXT NOT NULL,
+    rule_key        TEXT NOT NULL,
+    rule_payload_json TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS encounter_exports (
+    id              TEXT PRIMARY KEY,
+    encounter_id    TEXT NOT NULL REFERENCES encounters(id),
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    manifest_path   TEXT NOT NULL,
+    content_hash    TEXT,
+    format_version  TEXT NOT NULL DEFAULT '1.0',
+    export_payload_json TEXT,
+    is_canonical    INTEGER NOT NULL DEFAULT 1,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS encounter_sync_receipts (
+    id              TEXT PRIMARY KEY,
+    encounter_id    TEXT NOT NULL REFERENCES encounters(id),
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    target_path     TEXT NOT NULL,
+    synced_files_json TEXT,
+    verification_status TEXT NOT NULL DEFAULT 'unverified',
+    receipt_hash    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS encounter_validation_runs (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    encounter_id    TEXT NOT NULL REFERENCES encounters(id),
+    validation_type TEXT NOT NULL,
+    result          TEXT NOT NULL,
+    details_json    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_encounter_rules ON encounter_rules(encounter_id);
+  CREATE INDEX IF NOT EXISTS idx_encounter_exports ON encounter_exports(encounter_id);
+  CREATE INDEX IF NOT EXISTS idx_encounter_sync_receipts ON encounter_sync_receipts(encounter_id);
+  CREATE INDEX IF NOT EXISTS idx_encounter_validation_runs ON encounter_validation_runs(encounter_id);
   `,
 ];
 

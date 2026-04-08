@@ -1,0 +1,22 @@
+{
+  "name": "@mcptoolshop/studio-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for studio bootstrap — project creation, template scaffolding, runtime shells, diagnostics",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "studio-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@mcptoolshop/studio-bootstrap-core": "*",
+    "@mcptoolshop/game-foundry-registry": "*",
+    "zod": "^3.23.0"
+  },
+  "author": "mcp-tool-shop",
+  "license": "MIT"
+}

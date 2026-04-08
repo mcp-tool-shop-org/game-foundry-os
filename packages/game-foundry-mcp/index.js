@@ -91,6 +91,25 @@ import { registerProofRevokeFreeze } from '../proof-lab-mcp/dist/tools/proofRevo
 import { registerProofCompareRuns } from '../proof-lab-mcp/dist/tools/proofCompareRuns.js';
 import { registerProofGetProjectMatrix } from '../proof-lab-mcp/dist/tools/proofGetProjectMatrix.js';
 
+// Studio Bootstrap tools (Phase 5)
+import { setDb as setStudioDb } from '../studio-mcp/dist/server.js';
+import { registerStudioCreateProject } from '../studio-mcp/dist/tools/studioCreateProject.js';
+import { registerStudioBootstrapTemplate } from '../studio-mcp/dist/tools/studioBootstrapTemplate.js';
+import { registerStudioSeedRegistry } from '../studio-mcp/dist/tools/studioSeedRegistry.js';
+import { registerStudioSeedVault } from '../studio-mcp/dist/tools/studioSeedVault.js';
+import { registerStudioInstallRuntimeShell } from '../studio-mcp/dist/tools/studioInstallRuntimeShell.js';
+import { registerStudioInstallThemeShell } from '../studio-mcp/dist/tools/studioInstallThemeShell.js';
+import { registerStudioInstallProofShell } from '../studio-mcp/dist/tools/studioInstallProofShell.js';
+import { registerStudioProjectStatus } from '../studio-mcp/dist/tools/studioProjectStatus.js';
+import { registerStudioBootstrapDiagnostics } from '../studio-mcp/dist/tools/studioBootstrapDiagnostics.js';
+import { registerStudioGetTemplateInfo } from '../studio-mcp/dist/tools/studioGetTemplateInfo.js';
+import { registerStudioImportExistingProject } from '../studio-mcp/dist/tools/studioImportExistingProject.js';
+import { registerStudioGetNextStep } from '../studio-mcp/dist/tools/studioGetNextStep.js';
+import { registerStudioCreateChapterStub } from '../studio-mcp/dist/tools/studioCreateChapterStub.js';
+import { registerStudioCreateCharacterStub } from '../studio-mcp/dist/tools/studioCreateCharacterStub.js';
+import { registerStudioExportTemplate } from '../studio-mcp/dist/tools/studioExportTemplate.js';
+import { registerStudioDiffProjectVsTemplate } from '../studio-mcp/dist/tools/studioDiffProjectVsTemplate.js';
+
 // Engine Bridge tools
 import { registerVerifyRuntimePaths } from '../engine-bridge-mcp/dist/tools/verifyRuntimePaths.js';
 import { registerReportPlaceholders } from '../engine-bridge-mcp/dist/tools/reportPlaceholders.js';
@@ -102,10 +121,10 @@ import { registerSyncEncounterManifests } from '../engine-bridge-mcp/dist/tools/
 // ─── Single DB connection ───────────────────────────────────
 const db = openDatabase();
 
-// ─── Single MCP server, 78 tools ────────────────────────────
+// ─── Single MCP server, 94 tools ────────────────────────────
 const server = new McpServer({
   name: 'game-foundry-mcp',
-  version: '0.4.0',
+  version: '1.0.0',
 });
 
 // Sprite Foundry — inspection (8)
@@ -202,6 +221,25 @@ registerCanonGetNextStep(server);
 registerCanonCreatePageStub(server);
 registerCanonCompareSnapshots(server);
 registerCanonGetProjectMatrix(server);
+
+// Studio Bootstrap (16)
+setStudioDb(db);
+registerStudioCreateProject(server);
+registerStudioBootstrapTemplate(server);
+registerStudioSeedRegistry(server);
+registerStudioSeedVault(server);
+registerStudioInstallRuntimeShell(server);
+registerStudioInstallThemeShell(server);
+registerStudioInstallProofShell(server);
+registerStudioProjectStatus(server);
+registerStudioBootstrapDiagnostics(server);
+registerStudioGetTemplateInfo(server);
+registerStudioImportExistingProject(server);
+registerStudioGetNextStep(server);
+registerStudioCreateChapterStub(server);
+registerStudioCreateCharacterStub(server);
+registerStudioExportTemplate(server);
+registerStudioDiffProjectVsTemplate(server);
 
 // ─── Connect ────────────────────────────────────────────────
 const transport = new StdioServerTransport();

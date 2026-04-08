@@ -256,6 +256,72 @@ export interface StateEventRow {
   created_at: string;
 }
 
+// ─── Phase 5 types ─────────────────────────────────────────
+
+/** Bootstrap modes */
+export type BootstrapMode = 'blank' | 'story_first' | 'combat_first' | 'import_existing';
+export type BootstrapResult = 'pending' | 'pass' | 'fail' | 'partial';
+
+export interface ProjectTemplateRow {
+  id: string;
+  template_key: string;
+  display_name: string;
+  engine: string;
+  genre_profile: string | null;
+  version: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface ProjectBootstrapRow {
+  id: string;
+  project_id: string;
+  template_id: string | null;
+  bootstrap_mode: BootstrapMode;
+  target_path: string;
+  result: BootstrapResult;
+  details_json: string | null;
+  receipt_hash: string | null;
+  created_at: string;
+}
+
+export interface BootstrapArtifactRow {
+  id: number;
+  project_bootstrap_id: string;
+  artifact_type: string;
+  path: string;
+  content_hash: string | null;
+  created_at: string;
+}
+
+export interface TemplatePolicyRow {
+  id: string;
+  template_id: string;
+  policy_key: string;
+  policy_json: string | null;
+  created_at: string;
+}
+
+export interface ProjectStatusResult {
+  project_id: string;
+  template_used: string | null;
+  bootstrap_result: BootstrapResult | null;
+  canon_seeded: boolean;
+  registry_seeded: boolean;
+  runtime_shell_installed: boolean;
+  proof_shell_installed: boolean;
+  next_step: string;
+}
+
+export interface BootstrapDiagnosticResult {
+  project_id: string;
+  pass: boolean;
+  checks: Array<{ check: string; pass: boolean; detail: string }>;
+  blockers: string[];
+  warnings: string[];
+  next_action: string;
+}
+
 // ─── Phase 4 types ─────────────────────────────────────────
 
 /** Canon page kinds */

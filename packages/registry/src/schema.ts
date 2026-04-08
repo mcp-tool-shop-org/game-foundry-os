@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 
 const MIGRATIONS: string[] = [
   // Version 1: Initial schema
@@ -423,6 +423,53 @@ const MIGRATIONS: string[] = [
   CREATE INDEX IF NOT EXISTS idx_canon_snapshots_canon ON canon_snapshots(canon_id);
   CREATE INDEX IF NOT EXISTS idx_canon_drift_scope ON canon_drift_reports(scope_type, scope_id);
   CREATE INDEX IF NOT EXISTS idx_handoff_scope ON handoff_artifacts(scope_type, scope_id);
+  `,
+
+  // Version 6: Studio Bootstrap + Project Templates
+  `
+  CREATE TABLE IF NOT EXISTS project_templates (
+    id              TEXT PRIMARY KEY,
+    template_key    TEXT NOT NULL UNIQUE,
+    display_name    TEXT NOT NULL,
+    engine          TEXT NOT NULL DEFAULT 'godot',
+    genre_profile   TEXT,
+    version         TEXT NOT NULL DEFAULT '1.0.0',
+    description     TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS project_bootstraps (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    template_id     TEXT REFERENCES project_templates(id),
+    bootstrap_mode  TEXT NOT NULL DEFAULT 'combat_first',
+    target_path     TEXT NOT NULL,
+    result          TEXT NOT NULL DEFAULT 'pending',
+    details_json    TEXT,
+    receipt_hash    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS bootstrap_artifacts (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_bootstrap_id TEXT NOT NULL REFERENCES project_bootstraps(id),
+    artifact_type   TEXT NOT NULL,
+    path            TEXT NOT NULL,
+    content_hash    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS template_policies (
+    id              TEXT PRIMARY KEY,
+    template_id     TEXT NOT NULL REFERENCES project_templates(id),
+    policy_key      TEXT NOT NULL,
+    policy_json     TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_project_bootstraps ON project_bootstraps(project_id);
+  CREATE INDEX IF NOT EXISTS idx_bootstrap_artifacts ON bootstrap_artifacts(project_bootstrap_id);
+  CREATE INDEX IF NOT EXISTS idx_template_policies ON template_policies(template_id);
   `,
 ];
 

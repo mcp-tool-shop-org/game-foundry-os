@@ -256,6 +256,78 @@ export interface StateEventRow {
   created_at: string;
 }
 
+// ─── Phase 4 types ─────────────────────────────────────────
+
+/** Canon page kinds */
+export type CanonKind = 'project' | 'chapter' | 'character' | 'faction' | 'encounter' | 'combat_doctrine' | 'art_doctrine' | 'proof_note' | 'handoff';
+
+/** Canon trust states */
+export type CanonStatus = 'unregistered' | 'registered' | 'linked' | 'synced' | 'drift_warning' | 'canonical' | 'archived';
+
+/** Canon link types */
+export type CanonLinkType = 'describes' | 'governs' | 'proves' | 'tracks' | 'handoff_for' | 'freeze_note_for';
+
+/** Canon drift results */
+export type CanonDriftResult = 'clean' | 'drift' | 'warning';
+
+/** Handoff artifact types */
+export type HandoffArtifactType = 'chapter_handoff' | 'freeze_packet' | 'production_brief' | 'sprint_handoff';
+
+export interface CanonPageRow {
+  id: string;
+  project_id: string;
+  canon_id: string;
+  kind: CanonKind;
+  title: string;
+  vault_path: string;
+  status: CanonStatus;
+  content_hash: string | null;
+  frontmatter_json: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CanonLinkRow {
+  id: string;
+  project_id: string;
+  source_canon_id: string;
+  target_type: string;
+  target_id: string;
+  link_type: CanonLinkType;
+  created_at: string;
+}
+
+export interface CanonSnapshotRow {
+  id: string;
+  project_id: string;
+  canon_id: string;
+  content_hash: string;
+  parsed_body_json: string | null;
+  created_at: string;
+}
+
+export interface CanonDriftReportRow {
+  id: string;
+  project_id: string;
+  scope_type: string;
+  scope_id: string;
+  result: CanonDriftResult;
+  details_json: string | null;
+  created_at: string;
+}
+
+export interface HandoffArtifactRow {
+  id: string;
+  project_id: string;
+  scope_type: string;
+  scope_id: string;
+  artifact_type: HandoffArtifactType;
+  output_path: string | null;
+  content_hash: string | null;
+  details_json: string | null;
+  created_at: string;
+}
+
 // ─── Phase 3 types ─────────────────────────────────────────
 
 /** Proof states */

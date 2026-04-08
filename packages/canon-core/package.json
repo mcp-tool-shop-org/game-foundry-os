@@ -1,0 +1,18 @@
+{
+  "name": "@mcptoolshop/canon-core",
+  "version": "0.1.0",
+  "description": "Canon layer production logic — vault sync, pages, links, snapshots, drift detection, handoffs, timeline",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mcptoolshop/game-foundry-registry": "*",
+    "better-sqlite3": "^11.0.0"
+  },
+  "author": "mcp-tool-shop",
+  "license": "MIT"
+}

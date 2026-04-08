@@ -1,0 +1,22 @@
+{
+  "name": "@mcptoolshop/canon-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for canon layer — vault sync, pages, links, drift detection, handoffs",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "canon-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@mcptoolshop/canon-core": "*",
+    "@mcptoolshop/game-foundry-registry": "*",
+    "zod": "^3.23.0"
+  },
+  "author": "mcp-tool-shop",
+  "license": "MIT"
+}

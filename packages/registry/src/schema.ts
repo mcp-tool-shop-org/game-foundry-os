@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 const MIGRATIONS: string[] = [
   // Version 1: Initial schema
@@ -356,6 +356,73 @@ const MIGRATIONS: string[] = [
   CREATE INDEX IF NOT EXISTS idx_freeze_candidates_scope ON freeze_candidates(scope_type, scope_id);
   CREATE INDEX IF NOT EXISTS idx_freeze_receipts_scope ON freeze_receipts(scope_type, scope_id);
   CREATE INDEX IF NOT EXISTS idx_regressions_scope ON regressions(scope_type, scope_id);
+  `,
+
+  // Version 5: Canon Layer + Obsidian Integration
+  `
+  CREATE TABLE IF NOT EXISTS canon_pages (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    canon_id        TEXT NOT NULL UNIQUE,
+    kind            TEXT NOT NULL,
+    title           TEXT NOT NULL,
+    vault_path      TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'registered',
+    content_hash    TEXT,
+    frontmatter_json TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS canon_links (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    source_canon_id TEXT NOT NULL,
+    target_type     TEXT NOT NULL,
+    target_id       TEXT NOT NULL,
+    link_type       TEXT NOT NULL,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS canon_snapshots (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    canon_id        TEXT NOT NULL,
+    content_hash    TEXT NOT NULL,
+    parsed_body_json TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS canon_drift_reports (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    scope_type      TEXT NOT NULL,
+    scope_id        TEXT NOT NULL,
+    result          TEXT NOT NULL,
+    details_json    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS handoff_artifacts (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    scope_type      TEXT NOT NULL,
+    scope_id        TEXT NOT NULL,
+    artifact_type   TEXT NOT NULL,
+    output_path     TEXT,
+    content_hash    TEXT,
+    details_json    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_canon_pages_project ON canon_pages(project_id);
+  CREATE INDEX IF NOT EXISTS idx_canon_pages_kind ON canon_pages(kind);
+  CREATE INDEX IF NOT EXISTS idx_canon_pages_canon_id ON canon_pages(canon_id);
+  CREATE INDEX IF NOT EXISTS idx_canon_links_source ON canon_links(source_canon_id);
+  CREATE INDEX IF NOT EXISTS idx_canon_links_target ON canon_links(target_type, target_id);
+  CREATE INDEX IF NOT EXISTS idx_canon_snapshots_canon ON canon_snapshots(canon_id);
+  CREATE INDEX IF NOT EXISTS idx_canon_drift_scope ON canon_drift_reports(scope_type, scope_id);
+  CREATE INDEX IF NOT EXISTS idx_handoff_scope ON handoff_artifacts(scope_type, scope_id);
   `,
 ];
 

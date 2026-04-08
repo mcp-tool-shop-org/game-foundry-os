@@ -55,6 +55,24 @@ import { registerDoctrineDiffRuntime } from '../encounter-doctrine-mcp/dist/tool
 import { registerDoctrineRemoveUnit } from '../encounter-doctrine-mcp/dist/tools/doctrineRemoveUnit.js';
 import { registerDoctrineClone } from '../encounter-doctrine-mcp/dist/tools/doctrineClone.js';
 
+// Canon Layer tools (Phase 4)
+import { setDb as setCanonDb } from '../canon-mcp/dist/server.js';
+import { registerCanonSyncVault } from '../canon-mcp/dist/tools/canonSyncVault.js';
+import { registerCanonGetPage } from '../canon-mcp/dist/tools/canonGetPage.js';
+import { registerCanonSearch } from '../canon-mcp/dist/tools/canonSearch.js';
+import { registerCanonLinkObject } from '../canon-mcp/dist/tools/canonLinkObject.js';
+import { registerCanonGetCharacterBible } from '../canon-mcp/dist/tools/canonGetCharacterBible.js';
+import { registerCanonGetEncounterIntent } from '../canon-mcp/dist/tools/canonGetEncounterIntent.js';
+import { registerCanonDiffVsProduction } from '../canon-mcp/dist/tools/canonDiffVsProduction.js';
+import { registerCanonGetFreezeNote } from '../canon-mcp/dist/tools/canonGetFreezeNote.js';
+import { registerCanonGenerateHandoff } from '../canon-mcp/dist/tools/canonGenerateHandoff.js';
+import { registerCanonGetTimeline } from '../canon-mcp/dist/tools/canonGetTimeline.js';
+import { registerCanonValidatePages } from '../canon-mcp/dist/tools/canonValidatePages.js';
+import { registerCanonGetNextStep } from '../canon-mcp/dist/tools/canonGetNextStep.js';
+import { registerCanonCreatePageStub } from '../canon-mcp/dist/tools/canonCreatePageStub.js';
+import { registerCanonCompareSnapshots } from '../canon-mcp/dist/tools/canonCompareSnapshots.js';
+import { registerCanonGetProjectMatrix } from '../canon-mcp/dist/tools/canonGetProjectMatrix.js';
+
 // Proof Lab tools (Phase 3)
 import { setDb as setProofDb } from '../proof-lab-mcp/dist/server.js';
 import { registerProofRunAssetSuite } from '../proof-lab-mcp/dist/tools/proofRunAssetSuite.js';
@@ -84,10 +102,10 @@ import { registerSyncEncounterManifests } from '../engine-bridge-mcp/dist/tools/
 // ─── Single DB connection ───────────────────────────────────
 const db = openDatabase();
 
-// ─── Single MCP server, 63 tools ────────────────────────────
+// ─── Single MCP server, 78 tools ────────────────────────────
 const server = new McpServer({
   name: 'game-foundry-mcp',
-  version: '0.3.0',
+  version: '0.4.0',
 });
 
 // Sprite Foundry — inspection (8)
@@ -166,6 +184,24 @@ registerProofGetNextStep(server);
 registerProofRevokeFreeze(server);
 registerProofCompareRuns(server);
 registerProofGetProjectMatrix(server);
+
+// Canon Layer (15)
+setCanonDb(db);
+registerCanonSyncVault(server);
+registerCanonGetPage(server);
+registerCanonSearch(server);
+registerCanonLinkObject(server);
+registerCanonGetCharacterBible(server);
+registerCanonGetEncounterIntent(server);
+registerCanonDiffVsProduction(server);
+registerCanonGetFreezeNote(server);
+registerCanonGenerateHandoff(server);
+registerCanonGetTimeline(server);
+registerCanonValidatePages(server);
+registerCanonGetNextStep(server);
+registerCanonCreatePageStub(server);
+registerCanonCompareSnapshots(server);
+registerCanonGetProjectMatrix(server);
 
 // ─── Connect ────────────────────────────────────────────────
 const transport = new StdioServerTransport();

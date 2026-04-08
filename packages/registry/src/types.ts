@@ -256,6 +256,109 @@ export interface StateEventRow {
   created_at: string;
 }
 
+// ─── Phase 3 types ─────────────────────────────────────────
+
+/** Proof states */
+export type ProofRunResult = 'pass' | 'fail' | 'partial';
+export type AssertionStatus = 'pass' | 'fail' | 'warn' | 'skip';
+export type FreezeCandidateStatus = 'candidate' | 'blocked' | 'promoted' | 'revoked';
+export type FreezeReadiness = 'ready' | 'blocked' | 'warning_only';
+export type RegressionSeverity = 'critical' | 'major' | 'minor';
+
+export interface ProofSuiteRow {
+  id: string;
+  project_id: string;
+  suite_key: string;
+  scope_type: string;
+  display_name: string;
+  description: string | null;
+  is_blocking: number;
+  created_at: string;
+}
+
+export interface ProofRunRow {
+  id: string;
+  project_id: string;
+  suite_id: string | null;
+  scope_type: string;
+  scope_id: string;
+  result: ProofRunResult;
+  blocking_failures: number;
+  warning_count: number;
+  receipt_hash: string | null;
+  summary: string | null;
+  details_json: string | null;
+  tool_name: string | null;
+  created_at: string;
+}
+
+export interface ProofAssertionRow {
+  id: number;
+  proof_run_id: string;
+  assertion_key: string;
+  status: AssertionStatus;
+  message: string | null;
+  details_json: string | null;
+  created_at: string;
+}
+
+export interface FreezePolicyRow {
+  id: string;
+  project_id: string;
+  scope_type: string;
+  scope_id: string;
+  policy_key: string;
+  policy_json: string | null;
+  created_at: string;
+}
+
+export interface FreezeCandidateRow {
+  id: string;
+  project_id: string;
+  scope_type: string;
+  scope_id: string;
+  status: FreezeCandidateStatus;
+  blocking_reasons_json: string | null;
+  warning_reasons_json: string | null;
+  candidate_hash: string | null;
+  created_at: string;
+}
+
+export interface FreezeReceiptRow {
+  id: string;
+  project_id: string;
+  scope_type: string;
+  scope_id: string;
+  source_candidate_id: string | null;
+  receipt_hash: string | null;
+  freeze_summary: string | null;
+  details_json: string | null;
+  created_at: string;
+}
+
+export interface RegressionRow {
+  id: string;
+  project_id: string;
+  scope_type: string;
+  scope_id: string;
+  regression_type: string;
+  from_run_id: string | null;
+  to_run_id: string | null;
+  severity: RegressionSeverity;
+  details_json: string | null;
+  created_at: string;
+}
+
+export interface FreezeReadinessResult {
+  scope_type: string;
+  scope_id: string;
+  readiness: FreezeReadiness;
+  blocking_reasons: string[];
+  warning_reasons: string[];
+  latest_proof_runs: ProofRunRow[];
+  next_action: string;
+}
+
 // ─── Phase 2 row types ─────────────────────────────────────
 
 export interface EncounterRuleRow {

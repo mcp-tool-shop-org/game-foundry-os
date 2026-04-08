@@ -55,6 +55,24 @@ import { registerDoctrineDiffRuntime } from '../encounter-doctrine-mcp/dist/tool
 import { registerDoctrineRemoveUnit } from '../encounter-doctrine-mcp/dist/tools/doctrineRemoveUnit.js';
 import { registerDoctrineClone } from '../encounter-doctrine-mcp/dist/tools/doctrineClone.js';
 
+// Proof Lab tools (Phase 3)
+import { setDb as setProofDb } from '../proof-lab-mcp/dist/server.js';
+import { registerProofRunAssetSuite } from '../proof-lab-mcp/dist/tools/proofRunAssetSuite.js';
+import { registerProofRunEncounterSuite } from '../proof-lab-mcp/dist/tools/proofRunEncounterSuite.js';
+import { registerProofRunRuntimeSuite } from '../proof-lab-mcp/dist/tools/proofRunRuntimeSuite.js';
+import { registerProofRunChapterSpine } from '../proof-lab-mcp/dist/tools/proofRunChapterSpine.js';
+import { registerProofRunPresentationSuite } from '../proof-lab-mcp/dist/tools/proofRunPresentationSuite.js';
+import { registerProofGetFreezeReadiness } from '../proof-lab-mcp/dist/tools/proofGetFreezeReadiness.js';
+import { registerProofFreezeCandidate } from '../proof-lab-mcp/dist/tools/proofFreezeCandidate.js';
+import { registerProofPromoteFreeze } from '../proof-lab-mcp/dist/tools/proofPromoteFreeze.js';
+import { registerProofReportRegressions } from '../proof-lab-mcp/dist/tools/proofReportRegressions.js';
+import { registerProofGetTimeline } from '../proof-lab-mcp/dist/tools/proofGetTimeline.js';
+import { registerProofGenerateFreezeReport } from '../proof-lab-mcp/dist/tools/proofGenerateFreezeReport.js';
+import { registerProofGetNextStep } from '../proof-lab-mcp/dist/tools/proofGetNextStep.js';
+import { registerProofRevokeFreeze } from '../proof-lab-mcp/dist/tools/proofRevokeFreeze.js';
+import { registerProofCompareRuns } from '../proof-lab-mcp/dist/tools/proofCompareRuns.js';
+import { registerProofGetProjectMatrix } from '../proof-lab-mcp/dist/tools/proofGetProjectMatrix.js';
+
 // Engine Bridge tools
 import { registerVerifyRuntimePaths } from '../engine-bridge-mcp/dist/tools/verifyRuntimePaths.js';
 import { registerReportPlaceholders } from '../engine-bridge-mcp/dist/tools/reportPlaceholders.js';
@@ -66,10 +84,10 @@ import { registerSyncEncounterManifests } from '../engine-bridge-mcp/dist/tools/
 // ─── Single DB connection ───────────────────────────────────
 const db = openDatabase();
 
-// ─── Single MCP server, 48 tools ────────────────────────────
+// ─── Single MCP server, 63 tools ────────────────────────────
 const server = new McpServer({
   name: 'game-foundry-mcp',
-  version: '0.2.0',
+  version: '0.3.0',
 });
 
 // Sprite Foundry — inspection (8)
@@ -130,6 +148,24 @@ registerReportUnintegrated(server, db);
 registerGetBattleRuntimeStatus(server, db);
 registerSyncSpritePack(server, db);
 registerSyncEncounterManifests(server, db);
+
+// Proof Lab (15)
+setProofDb(db);
+registerProofRunAssetSuite(server);
+registerProofRunEncounterSuite(server);
+registerProofRunRuntimeSuite(server);
+registerProofRunChapterSpine(server);
+registerProofRunPresentationSuite(server);
+registerProofGetFreezeReadiness(server);
+registerProofFreezeCandidate(server);
+registerProofPromoteFreeze(server);
+registerProofReportRegressions(server);
+registerProofGetTimeline(server);
+registerProofGenerateFreezeReport(server);
+registerProofGetNextStep(server);
+registerProofRevokeFreeze(server);
+registerProofCompareRuns(server);
+registerProofGetProjectMatrix(server);
 
 // ─── Connect ────────────────────────────────────────────────
 const transport = new StdioServerTransport();

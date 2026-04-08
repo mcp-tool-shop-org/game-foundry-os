@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 
 const MIGRATIONS: string[] = [
   // Version 1: Initial schema
@@ -261,6 +261,101 @@ const MIGRATIONS: string[] = [
   CREATE INDEX IF NOT EXISTS idx_encounter_exports ON encounter_exports(encounter_id);
   CREATE INDEX IF NOT EXISTS idx_encounter_sync_receipts ON encounter_sync_receipts(encounter_id);
   CREATE INDEX IF NOT EXISTS idx_encounter_validation_runs ON encounter_validation_runs(encounter_id);
+  `,
+
+  // Version 4: Proof Lab + Freeze Orchestration
+  `
+  CREATE TABLE IF NOT EXISTS proof_suites (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    suite_key       TEXT NOT NULL,
+    scope_type      TEXT NOT NULL,
+    display_name    TEXT NOT NULL,
+    description     TEXT,
+    is_blocking     INTEGER NOT NULL DEFAULT 1,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS proof_runs (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    suite_id        TEXT REFERENCES proof_suites(id),
+    scope_type      TEXT NOT NULL,
+    scope_id        TEXT NOT NULL,
+    result          TEXT NOT NULL,
+    blocking_failures INTEGER NOT NULL DEFAULT 0,
+    warning_count   INTEGER NOT NULL DEFAULT 0,
+    receipt_hash    TEXT,
+    summary         TEXT,
+    details_json    TEXT,
+    tool_name       TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS proof_assertions (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    proof_run_id    TEXT NOT NULL REFERENCES proof_runs(id),
+    assertion_key   TEXT NOT NULL,
+    status          TEXT NOT NULL,
+    message         TEXT,
+    details_json    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS freeze_policies (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    scope_type      TEXT NOT NULL,
+    scope_id        TEXT NOT NULL,
+    policy_key      TEXT NOT NULL,
+    policy_json     TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS freeze_candidates (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    scope_type      TEXT NOT NULL,
+    scope_id        TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'candidate',
+    blocking_reasons_json TEXT,
+    warning_reasons_json TEXT,
+    candidate_hash  TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS freeze_receipts (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    scope_type      TEXT NOT NULL,
+    scope_id        TEXT NOT NULL,
+    source_candidate_id TEXT REFERENCES freeze_candidates(id),
+    receipt_hash    TEXT,
+    freeze_summary  TEXT,
+    details_json    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS regressions (
+    id              TEXT PRIMARY KEY,
+    project_id      TEXT NOT NULL REFERENCES projects(id),
+    scope_type      TEXT NOT NULL,
+    scope_id        TEXT NOT NULL,
+    regression_type TEXT NOT NULL,
+    from_run_id     TEXT REFERENCES proof_runs(id),
+    to_run_id       TEXT REFERENCES proof_runs(id),
+    severity        TEXT NOT NULL DEFAULT 'critical',
+    details_json    TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_proof_runs_scope ON proof_runs(scope_type, scope_id);
+  CREATE INDEX IF NOT EXISTS idx_proof_runs_suite ON proof_runs(suite_id);
+  CREATE INDEX IF NOT EXISTS idx_proof_assertions_run ON proof_assertions(proof_run_id);
+  CREATE INDEX IF NOT EXISTS idx_freeze_policies_scope ON freeze_policies(scope_type, scope_id);
+  CREATE INDEX IF NOT EXISTS idx_freeze_candidates_scope ON freeze_candidates(scope_type, scope_id);
+  CREATE INDEX IF NOT EXISTS idx_freeze_receipts_scope ON freeze_receipts(scope_type, scope_id);
+  CREATE INDEX IF NOT EXISTS idx_regressions_scope ON regressions(scope_type, scope_id);
   `,
 ];
 

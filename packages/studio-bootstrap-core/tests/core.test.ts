@@ -325,14 +325,14 @@ describe('diagnostics', () => {
 
     const result = runDiagnostics(db, 'test-project', tmpDir);
     expect(result.pass).toBe(true);
-    expect(result.blockers.length).toBe(0);
+    expect(result.blocker_count).toBe(0);
   });
 
   it('fails when runtime shell missing', () => {
     seedProject();
     const result = runDiagnostics(db, 'test-project', tmpDir);
     expect(result.pass).toBe(false);
-    expect(result.blockers.some(b => b.includes('runtime'))).toBe(true);
+    expect(result.findings.some(f => f.severity === 'critical' && f.affected_path.includes('project.godot'))).toBe(true);
   });
 
   it('reports missing canon pages', () => {
@@ -343,7 +343,7 @@ describe('diagnostics', () => {
     // No vault seeded
     const result = runDiagnostics(db, 'test-project', tmpDir);
     expect(result.pass).toBe(false);
-    expect(result.blockers.some(b => b.includes('Canon'))).toBe(true);
+    expect(result.findings.some(f => f.id === 'canon_vault_missing')).toBe(true);
   });
 
   it('reports missing proof shell', () => {
@@ -355,7 +355,7 @@ describe('diagnostics', () => {
     // No proof shell
     const result = runDiagnostics(db, 'test-project', tmpDir);
     expect(result.pass).toBe(false);
-    expect(result.blockers.some(b => b.includes('Proof'))).toBe(true);
+    expect(result.findings.some(f => f.id === 'proof_shell_missing')).toBe(true);
   });
 });
 
@@ -372,8 +372,8 @@ describe('project status', () => {
     const status = getProjectStatus(db, 'test-project');
     expect(status.bootstrap_result).toBe('pass');
     expect(status.template_used).toBe('godot-tactics-template');
-    expect(status.registry_seeded).toBe(true);
-    expect(status.proof_shell_installed).toBe(true);
+    expect(status.installed_shells.registry).toBe(true);
+    expect(status.installed_shells.proof).toBe(true);
   });
 
   it('returns correct status for unbootstrapped project', () => {
@@ -401,31 +401,37 @@ describe('next step', () => {
 
   it('suggests seed_vault when vault missing', () => {
     seedProject();
+    installRuntimeShell(db, 'test-project', tmpDir);
     const b = createBootstrap(db, 'test-project', null, 'combat_first', tmpDir);
     completeBootstrap(db, b.id, 'pass');
+    installProofShell(db, 'test-project');
     const step = getStudioNextStep(db, 'test-project');
-    expect(step.action).toBe('seed_vault');
+    // Canon vault missing is a critical repairable finding
+    expect(step.action).toBe('studio_seed_vault');
   });
 
   it('suggests install_proof_shell when suites missing', () => {
     seedProject();
+    installRuntimeShell(db, 'test-project', tmpDir);
     const b = createBootstrap(db, 'test-project', null, 'combat_first', tmpDir);
     completeBootstrap(db, b.id, 'pass');
-    // Add a fake canon page
-    db.prepare(`
-      INSERT INTO canon_pages (id, project_id, canon_id, kind, title, vault_path, status)
-      VALUES ('p1', 'test-project', 'test-canon', 'project', 'Test', '/tmp/test.md', 'registered')
-    `).run();
+    // Seed canon vault
+    const vaultPath = path.join(tmpDir, 'canon');
+    seedVault(db, 'test-project', vaultPath, 'combat_first');
+    // No proof shell
     const step = getStudioNextStep(db, 'test-project');
-    expect(step.action).toBe('install_proof_shell');
+    expect(step.action).toBe('studio_install_proof_shell');
   });
 
   it('suggests continue_production when fully set up', () => {
     seedProject();
+    installRuntimeShell(db, 'test-project', tmpDir);
     const b = createBootstrap(db, 'test-project', null, 'combat_first', tmpDir);
     completeBootstrap(db, b.id, 'pass');
     seedProjectRegistry(db, 'test-project', 'godot-tactics-template');
-    // Add canon page
+    // Seed canon vault + register page
+    const vaultPath = path.join(tmpDir, 'canon');
+    seedVault(db, 'test-project', vaultPath, 'combat_first');
     db.prepare(`
       INSERT INTO canon_pages (id, project_id, canon_id, kind, title, vault_path, status)
       VALUES ('p1', 'test-project', 'test-canon', 'project', 'Test', '/tmp/test.md', 'registered')

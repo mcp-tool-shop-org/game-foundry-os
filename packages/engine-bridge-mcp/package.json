@@ -4,6 +4,15 @@
   "description": "MCP server for Godot engine integration verification and sync",
   "type": "module",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./lib": "./dist/lib.js"
+  },
+  "typesVersions": {
+    "*": {
+      "lib": ["dist/lib.d.ts"]
+    }
+  },
   "bin": {
     "engine-bridge-mcp": "dist/index.js"
   },

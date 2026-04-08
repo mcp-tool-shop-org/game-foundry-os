@@ -29,29 +29,29 @@ export function registerStudioDiffProjectVsTemplate(server: McpServer): void {
       diffs.push({
         component: 'canon_vault',
         expected: true,
-        actual: status.canon_seeded,
-        status: status.canon_seeded ? 'match' : 'missing',
+        actual: status.installed_shells.canon,
+        status: status.installed_shells.canon ? 'match' : 'missing',
       });
 
       diffs.push({
         component: 'registry_defaults',
         expected: true,
-        actual: status.registry_seeded,
-        status: status.registry_seeded ? 'match' : 'missing',
+        actual: status.installed_shells.registry,
+        status: status.installed_shells.registry ? 'match' : 'missing',
       });
 
       diffs.push({
         component: 'runtime_shell',
         expected: true,
-        actual: status.runtime_shell_installed,
-        status: status.runtime_shell_installed ? 'match' : 'missing',
+        actual: status.installed_shells.runtime,
+        status: status.installed_shells.runtime ? 'match' : 'missing',
       });
 
       diffs.push({
         component: 'proof_shell',
         expected: true,
-        actual: status.proof_shell_installed,
-        status: status.proof_shell_installed ? 'match' : 'missing',
+        actual: status.installed_shells.proof,
+        status: status.installed_shells.proof ? 'match' : 'missing',
       });
 
       const missing = diffs.filter(d => d.status === 'missing');
@@ -64,9 +64,11 @@ export function registerStudioDiffProjectVsTemplate(server: McpServer): void {
             project_id: params.project_id,
             template_key: params.template_key,
             template_version: template.version,
+            status: status.status,
             diffs,
             complete,
             missing_count: missing.length,
+            engine_truth: status.engine_truth,
             next_step: status.next_step,
           }, null, 2),
         }],

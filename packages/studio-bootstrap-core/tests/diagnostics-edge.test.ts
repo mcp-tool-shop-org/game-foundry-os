@@ -30,7 +30,7 @@ describe('diagnostics edge cases', () => {
   it('fails when godot project file missing', () => {
     const result = runDiagnostics(db, 'proj-de', tmpDir);
     expect(result.pass).toBe(false);
-    expect(result.blockers.some(b => b.includes('project.godot'))).toBe(true);
+    expect(result.findings.some(f => f.affected_path === 'project.godot')).toBe(true);
   });
 
   it('fails when canon vault directory missing', () => {
@@ -41,7 +41,7 @@ describe('diagnostics edge cases', () => {
 
     const result = runDiagnostics(db, 'proj-de', tmpDir);
     expect(result.pass).toBe(false);
-    expect(result.blockers.some(b => b.includes('Canon'))).toBe(true);
+    expect(result.findings.some(f => f.id === 'canon_vault_missing')).toBe(true);
   });
 
   it('fails when battle_scene.gd missing', () => {
@@ -50,7 +50,7 @@ describe('diagnostics edge cases', () => {
 
     const result = runDiagnostics(db, 'proj-de', tmpDir);
     expect(result.pass).toBe(false);
-    expect(result.blockers.some(b => b.includes('battle_scene.gd'))).toBe(true);
+    expect(result.findings.some(f => f.affected_path.includes('battle_scene.gd'))).toBe(true);
   });
 
   it('passes when all components present', () => {
@@ -64,7 +64,7 @@ describe('diagnostics edge cases', () => {
 
     const result = runDiagnostics(db, 'proj-de', tmpDir);
     expect(result.pass).toBe(true);
-    expect(result.blockers.length).toBe(0);
+    expect(result.blocker_count).toBe(0);
     expect(result.next_action).toBe('project_ready');
   });
 
@@ -72,10 +72,10 @@ describe('diagnostics edge cases', () => {
     // Empty directory — everything should fail
     const result = runDiagnostics(db, 'proj-de', tmpDir);
     expect(result.pass).toBe(false);
-    // Should have blockers for: directories, GD files, canon vault, proof suites
-    expect(result.blockers.length).toBeGreaterThan(3);
+    // Should have findings for: project.godot, shell files, canon vault, proof suites
+    expect(result.findings.length).toBeGreaterThan(3);
 
-    const failedChecks = result.checks.filter(c => !c.pass);
-    expect(failedChecks.length).toBeGreaterThan(5);
+    const criticalFindings = result.findings.filter(f => f.severity === 'critical');
+    expect(criticalFindings.length).toBeGreaterThan(2);
   });
 });

@@ -132,7 +132,7 @@ describe('full studio bootstrap workflow', () => {
 
     const diag = runDiagnostics(db, PROJECT_ID, tmpDir);
     expect(diag.pass).toBe(true);
-    expect(diag.blockers.length).toBe(0);
+    expect(diag.blocker_count).toBe(0);
   });
 
   it('project_status shows all components installed', () => {
@@ -156,10 +156,10 @@ describe('full studio bootstrap workflow', () => {
     completeBootstrap(db, bootstrap.id, 'pass', null);
 
     const status = getProjectStatus(db, PROJECT_ID);
-    expect(status.canon_seeded).toBe(true);
-    expect(status.registry_seeded).toBe(true);
-    expect(status.runtime_shell_installed).toBe(true);
-    expect(status.proof_shell_installed).toBe(true);
+    expect(status.installed_shells.canon).toBe(true);
+    expect(status.installed_shells.registry).toBe(true);
+    expect(status.installed_shells.runtime).toBe(true);
+    expect(status.installed_shells.proof).toBe(true);
   });
 
   it('get_next_step suggests production start after bootstrap', () => {
@@ -170,6 +170,10 @@ describe('full studio bootstrap workflow', () => {
     installRuntimeShell(db, PROJECT_ID, tmpDir);
     installProofShell(db, PROJECT_ID);
     completeBootstrap(db, bootstrap.id, 'pass', null);
+
+    // Seed canon vault
+    const canonPath = path.join(tmpDir, 'canon');
+    seedVault(db, PROJECT_ID, canonPath, 'combat_first');
 
     // Register a canon page so canon is seeded
     db.prepare(`

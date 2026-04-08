@@ -302,23 +302,60 @@ export interface TemplatePolicyRow {
   created_at: string;
 }
 
+/** Project health status derived from engine truth */
+export type ProjectHealthStatus = 'ready' | 'blocked' | 'incomplete' | 'drifted';
+
+/** Engine truth snapshot embedded in project status */
+export interface EngineTruth {
+  project_config_valid: boolean;
+  shell_compliance: boolean;
+  autoload_count: number;
+  missing_autoloads: string[];
+  display_width: number;
+  display_height: number;
+  stretch_mode: string;
+  scale_mode: string;
+  renderer: string;
+}
+
 export interface ProjectStatusResult {
   project_id: string;
   template_used: string | null;
   bootstrap_result: BootstrapResult | null;
-  canon_seeded: boolean;
-  registry_seeded: boolean;
-  runtime_shell_installed: boolean;
-  proof_shell_installed: boolean;
+  status: ProjectHealthStatus;
+  blockers: string[];
+  warnings: string[];
+  installed_shells: {
+    canon: boolean;
+    registry: boolean;
+    runtime: boolean;
+    theme: boolean;
+    proof: boolean;
+  };
+  missing_shells: string[];
+  repair_candidates: string[];
   next_step: string;
+  engine_truth: EngineTruth;
+}
+
+/** A single diagnostic finding with source tracing */
+export interface DiagnosticFinding {
+  id: string;
+  severity: 'critical' | 'major' | 'minor';
+  source_tool: string;
+  affected_path: string;
+  message: string;
+  repairable: boolean;
+  repair_action: string | null;
 }
 
 export interface BootstrapDiagnosticResult {
   project_id: string;
   pass: boolean;
-  checks: Array<{ check: string; pass: boolean; detail: string }>;
-  blockers: string[];
-  warnings: string[];
+  findings: DiagnosticFinding[];
+  blocker_count: number;
+  warning_count: number;
+  repair_candidates: string[];
   next_action: string;
 }
 

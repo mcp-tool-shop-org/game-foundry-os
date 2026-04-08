@@ -40,10 +40,10 @@ describe('template diff', () => {
     const status = getProjectStatus(db, 'proj-td');
 
     const diffs = [];
-    diffs.push({ component: 'canon_vault', expected: true, actual: status.canon_seeded, status: status.canon_seeded ? 'match' : 'missing' });
-    diffs.push({ component: 'registry_defaults', expected: true, actual: status.registry_seeded, status: status.registry_seeded ? 'match' : 'missing' });
-    diffs.push({ component: 'runtime_shell', expected: true, actual: status.runtime_shell_installed, status: status.runtime_shell_installed ? 'match' : 'missing' });
-    diffs.push({ component: 'proof_shell', expected: true, actual: status.proof_shell_installed, status: status.proof_shell_installed ? 'match' : 'missing' });
+    diffs.push({ component: 'canon_vault', expected: true, actual: status.installed_shells.canon, status: status.installed_shells.canon ? 'match' : 'missing' });
+    diffs.push({ component: 'registry_defaults', expected: true, actual: status.installed_shells.registry, status: status.installed_shells.registry ? 'match' : 'missing' });
+    diffs.push({ component: 'runtime_shell', expected: true, actual: status.installed_shells.runtime, status: status.installed_shells.runtime ? 'match' : 'missing' });
+    diffs.push({ component: 'proof_shell', expected: true, actual: status.installed_shells.proof, status: status.installed_shells.proof ? 'match' : 'missing' });
 
     const missing = diffs.filter(d => d.status === 'missing');
     expect(missing.length).toBe(4); // Everything missing
@@ -70,10 +70,10 @@ describe('template diff', () => {
 
     const status = getProjectStatus(db, 'proj-td');
     const diffs = [
-      { component: 'canon_vault', actual: status.canon_seeded },
-      { component: 'registry_defaults', actual: status.registry_seeded },
-      { component: 'runtime_shell', actual: status.runtime_shell_installed },
-      { component: 'proof_shell', actual: status.proof_shell_installed },
+      { component: 'canon_vault', actual: status.installed_shells.canon },
+      { component: 'registry_defaults', actual: status.installed_shells.registry },
+      { component: 'runtime_shell', actual: status.installed_shells.runtime },
+      { component: 'proof_shell', actual: status.installed_shells.proof },
     ];
 
     const missing = diffs.filter(d => !d.actual);

@@ -5,8 +5,6 @@ import path from 'node:path';
 import os from 'node:os';
 import { openDatabase, upsertProject } from '@mcptoolshop/game-foundry-registry';
 import {
-  createBootstrap,
-  completeBootstrap,
   runDiagnostics,
   installRuntimeShell,
 } from '@mcptoolshop/studio-bootstrap-core';
@@ -27,13 +25,17 @@ afterEach(() => {
 describe('import existing project', () => {
   it('detects Godot project by project.godot file', () => {
     upsertProject(db, 'proj-imp', 'Import Test', tmpDir);
-    // Create a project.godot file
-    fs.writeFileSync(path.join(tmpDir, 'project.godot'), '; Godot project', 'utf-8');
+    // Create a valid project.godot file
+    fs.writeFileSync(
+      path.join(tmpDir, 'project.godot'),
+      '[application]\nconfig/name="TestProject"\n',
+      'utf-8',
+    );
 
     const diag = runDiagnostics(db, 'proj-imp', tmpDir);
-    const godotCheck = diag.checks.find(c => c.check === 'runtime:project.godot');
-    expect(godotCheck).toBeDefined();
-    expect(godotCheck!.pass).toBe(true);
+    // project.godot should not appear as a finding when it exists and is valid
+    const godotFinding = diag.findings.find(f => f.id === 'engine_project_godot');
+    expect(godotFinding).toBeUndefined();
   });
 
   it('reports missing canon vault', () => {
@@ -41,10 +43,10 @@ describe('import existing project', () => {
     installRuntimeShell(db, 'proj-imp', tmpDir);
 
     const diag = runDiagnostics(db, 'proj-imp', tmpDir);
-    const vaultCheck = diag.checks.find(c => c.check === 'canon:vault_root');
-    expect(vaultCheck).toBeDefined();
-    expect(vaultCheck!.pass).toBe(false);
-    expect(diag.blockers.some(b => b.includes('Canon'))).toBe(true);
+    const vaultFinding = diag.findings.find(f => f.id === 'canon_vault_missing');
+    expect(vaultFinding).toBeDefined();
+    expect(vaultFinding!.severity).toBe('critical');
+    expect(vaultFinding!.repairable).toBe(true);
   });
 
   it('reports missing proof shell', () => {
@@ -52,10 +54,10 @@ describe('import existing project', () => {
     installRuntimeShell(db, 'proj-imp', tmpDir);
 
     const diag = runDiagnostics(db, 'proj-imp', tmpDir);
-    const proofCheck = diag.checks.find(c => c.check === 'proof:suites');
-    expect(proofCheck).toBeDefined();
-    expect(proofCheck!.pass).toBe(false);
-    expect(diag.blockers.some(b => b.includes('Proof'))).toBe(true);
+    const proofFinding = diag.findings.find(f => f.id === 'proof_shell_missing');
+    expect(proofFinding).toBeDefined();
+    expect(proofFinding!.severity).toBe('critical');
+    expect(proofFinding!.source_tool).toBe('proof_run_asset_suite');
   });
 
   it('identifies existing sprite pack directories', () => {
@@ -68,12 +70,5 @@ describe('import existing project', () => {
     const portraitExists = fs.existsSync(path.join(tmpDir, 'assets', 'portraits'));
     expect(spriteExists).toBe(true);
     expect(portraitExists).toBe(true);
-
-    // These directories satisfy the directory checks in diagnostics
-    const diag = runDiagnostics(db, 'proj-imp', tmpDir);
-    const spriteDirCheck = diag.checks.find(c => c.check === 'directory:assets/sprites');
-    const portraitDirCheck = diag.checks.find(c => c.check === 'directory:assets/portraits');
-    expect(spriteDirCheck!.pass).toBe(true);
-    expect(portraitDirCheck!.pass).toBe(true);
   });
 });

@@ -30,3 +30,17 @@ export type { ChapterHandoffArtifact } from './chapter-handoff.js';
 
 export { getChapterFreezeCalibration } from './chapter-freeze.js';
 export type { ChapterFreezeCalibration } from './chapter-freeze.js';
+
+// v1.8.0 Chapter Authoring Spine
+export {
+  setChapterDefaults,
+  getChapterDefaults,
+  resolveDefaults,
+} from './chapter-defaults.js';
+export type { SetDefaultsInput, ResolvedDefaults } from './chapter-defaults.js';
+
+export { scaffoldChapter } from './chapter-scaffold.js';
+
+export { computeAuthoringGaps } from './chapter-authoring-gaps.js';
+
+export { computeFirstPlayablePath } from './chapter-first-playable.js';

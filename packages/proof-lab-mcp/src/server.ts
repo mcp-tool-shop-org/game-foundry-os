@@ -19,6 +19,11 @@ import { registerProofCompareRuns } from './tools/proofCompareRuns.js';
 import { registerProofGetProjectMatrix } from './tools/proofGetProjectMatrix.js';
 import { registerProofRunVisualSuite } from './tools/proofRunVisualSuite.js';
 
+// v1.9.0 Render Doctrine + Board Composite
+import { registerRenderDoctrineSet } from './tools/renderDoctrineSet.js';
+import { registerRenderDoctrineGet } from './tools/renderDoctrineGet.js';
+import { registerProofRunBoardComposite } from './tools/proofRunBoardComposite.js';
+
 let _db: Database.Database | undefined;
 
 export function getDb(): Database.Database {
@@ -55,6 +60,11 @@ export function createServer(): McpServer {
   registerProofCompareRuns(server);
   registerProofGetProjectMatrix(server);
   registerProofRunVisualSuite(server);
+
+  // Render Doctrine + Board Composite (v1.9.0)
+  registerRenderDoctrineSet(server);
+  registerRenderDoctrineGet(server);
+  registerProofRunBoardComposite(server);
 
   return server;
 }

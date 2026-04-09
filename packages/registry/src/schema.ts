@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 
-const SCHEMA_VERSION = 11;
+const SCHEMA_VERSION = 13;
 
 const MIGRATIONS: string[] = [
   // Version 1: Initial schema
@@ -725,6 +725,121 @@ const MIGRATIONS: string[] = [
 
   CREATE INDEX IF NOT EXISTS idx_chapter_verdicts_chapter ON chapter_verdicts(chapter_id);
   CREATE INDEX IF NOT EXISTS idx_chapter_verdicts_project ON chapter_verdicts(project_id);
+  `,
+
+  // Version 12: Chapter Authoring Spine
+  `
+  CREATE TABLE IF NOT EXISTS chapter_authoring_defaults (
+    chapter_id              TEXT PRIMARY KEY REFERENCES chapters(id),
+    project_id              TEXT NOT NULL REFERENCES projects(id),
+    default_grid_rows       INTEGER NOT NULL DEFAULT 3,
+    default_grid_cols       INTEGER NOT NULL DEFAULT 8,
+    default_encounter_type  TEXT NOT NULL DEFAULT 'standard',
+    default_max_turns       INTEGER,
+    default_tile_size_px    INTEGER NOT NULL DEFAULT 64,
+    default_viewport_width  INTEGER NOT NULL DEFAULT 1280,
+    default_viewport_height INTEGER NOT NULL DEFAULT 720,
+    require_scene_contract  INTEGER NOT NULL DEFAULT 1,
+    require_ui_layers       INTEGER NOT NULL DEFAULT 1,
+    require_proof_pass      INTEGER NOT NULL DEFAULT 1,
+    require_playtest_pass   INTEGER NOT NULL DEFAULT 0,
+    require_canon_link      INTEGER NOT NULL DEFAULT 0,
+    created_at              TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at              TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS chapter_scaffold_receipts (
+    id                      TEXT PRIMARY KEY,
+    chapter_id              TEXT NOT NULL REFERENCES chapters(id),
+    project_id              TEXT NOT NULL REFERENCES projects(id),
+    input_brief_json        TEXT NOT NULL,
+    encounters_created      INTEGER NOT NULL DEFAULT 0,
+    scene_contracts_created INTEGER NOT NULL DEFAULT 0,
+    layers_configured       INTEGER NOT NULL DEFAULT 0,
+    receipt_hash            TEXT,
+    created_at              TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_cad_project ON chapter_authoring_defaults(project_id);
+  CREATE INDEX IF NOT EXISTS idx_csr_chapter ON chapter_scaffold_receipts(chapter_id);
+  `,
+
+  // Version 13: Render Doctrine (Visual Foundry / Sprite Mastery Spine)
+  `
+  CREATE TABLE IF NOT EXISTS render_doctrines (
+    project_id              TEXT PRIMARY KEY REFERENCES projects(id),
+
+    -- Engine
+    engine_baseline         TEXT NOT NULL DEFAULT 'blender-4.2',
+    final_renderer          TEXT NOT NULL DEFAULT 'cycles',
+    iteration_renderer      TEXT NOT NULL DEFAULT 'eevee',
+
+    -- Camera
+    camera_projection       TEXT NOT NULL DEFAULT 'orthographic',
+    camera_yaw              REAL NOT NULL DEFAULT 45.0,
+    camera_pitch            REAL NOT NULL DEFAULT 35.264,
+    camera_focal_length     REAL NOT NULL DEFAULT 85.0,
+    orbit_rig               TEXT NOT NULL DEFAULT 'turntable',
+
+    -- Directions
+    direction_count         INTEGER NOT NULL DEFAULT 8,
+    direction_labels_json   TEXT NOT NULL DEFAULT '["N","NE","E","SE","S","SW","W","NW"]',
+    yaw_step                REAL NOT NULL DEFAULT 45.0,
+
+    -- Scale
+    cell_sizes_json         TEXT NOT NULL DEFAULT '{"small":64,"standard":128,"large":256}',
+    target_heights_json     TEXT NOT NULL DEFAULT '{"small":48,"standard":96,"large":192}',
+    oversample_factor       INTEGER NOT NULL DEFAULT 2,
+
+    -- Lighting
+    lighting_rig            TEXT NOT NULL DEFAULT 'combat_3point',
+    key_fill_ratio          REAL NOT NULL DEFAULT 3.0,
+    rim_intensity           REAL NOT NULL DEFAULT 0.85,
+
+    -- Shader
+    shader_family           TEXT NOT NULL DEFAULT 'pbr_simplified',
+
+    -- Outline
+    outline_method          TEXT NOT NULL DEFAULT 'freestyle',
+    outline_thickness_json  TEXT NOT NULL DEFAULT '{"standard":1,"boss":2}',
+
+    -- Edge
+    edge_doctrine           TEXT NOT NULL DEFAULT 'high_quality_aa',
+
+    -- Export
+    alpha_policy            TEXT NOT NULL DEFAULT 'straight',
+    color_space             TEXT NOT NULL DEFAULT 'sRGB',
+    view_transform          TEXT NOT NULL DEFAULT 'AgX',
+    export_formats_json     TEXT NOT NULL DEFAULT '["png"]',
+
+    -- Naming
+    naming_convention       TEXT NOT NULL DEFAULT '{unit}_{variant}_{action}_{dir}_{frame:04d}_{pass}.png',
+
+    -- Acceptance: occupancy
+    occupancy_min           REAL NOT NULL DEFAULT 0.18,
+    occupancy_max           REAL NOT NULL DEFAULT 0.55,
+    occupancy_min_large     REAL NOT NULL DEFAULT 0.28,
+    occupancy_max_large     REAL NOT NULL DEFAULT 0.55,
+
+    -- Acceptance: silhouette
+    perimeter_complexity_max    REAL NOT NULL DEFAULT 1.25,
+    pose_delta_min              REAL NOT NULL DEFAULT 0.12,
+    class_confusion_max_iou     REAL NOT NULL DEFAULT 0.65,
+
+    -- Recognition targets
+    recognition_class_pct   REAL NOT NULL DEFAULT 90.0,
+    recognition_action_pct  REAL NOT NULL DEFAULT 80.0,
+
+    -- Board survivability
+    board_test_backgrounds_json TEXT NOT NULL DEFAULT '["dark","mid","noisy"]',
+    min_board_contrast      REAL NOT NULL DEFAULT 40.0,
+
+    -- Required passes
+    required_passes_json    TEXT NOT NULL DEFAULT '["beauty","outline","mask","normal"]',
+
+    created_at              TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at              TEXT NOT NULL DEFAULT (datetime('now'))
+  );
   `,
 ];
 

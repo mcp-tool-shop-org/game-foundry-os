@@ -1,5 +1,6 @@
 import type Database from 'better-sqlite3';
 import type { ProofRunRow, VariantRow } from '@mcptoolshop/game-foundry-registry';
+import { getRenderDoctrineOrDefaults } from '@mcptoolshop/game-foundry-registry';
 import { createProofRun, addAssertion } from './runs.js';
 import { packAlbedoDir, DIRECTIONS } from '@mcptoolshop/engine-bridge-mcp/lib';
 import fs from 'node:fs';
@@ -24,8 +25,8 @@ export interface VisualCheckConfig {
 
 const DEFAULT_CONFIG: VisualCheckConfig = {
   target_tile_size: 96,
-  min_occupancy: 0.25,
-  max_occupancy: 0.95,
+  min_occupancy: 0.18,
+  max_occupancy: 0.55,
   min_dimension: 32,
   max_dimension: 256,
   fringe_tolerance: 20,
@@ -45,6 +46,11 @@ export interface SpriteCheckResult {
   fringe_pixels: number;          // Semi-opaque border pixels (halo indicator)
   avg_luminance: number;          // Average brightness of visible pixels (0-255)
   issues: string[];
+  // v1.9.0 extended metrics
+  silhouette_area: number;        // Total non-transparent pixel count
+  silhouette_edge_count: number;  // Perimeter pixels (non-transparent adjacent to transparent)
+  left_half_luminance: number;    // Avg luminance of visible pixels in left half
+  right_half_luminance: number;   // Avg luminance of visible pixels in right half
 }
 
 /**
@@ -64,6 +70,11 @@ export function checkSprite(filePath: string, config: VisualCheckConfig = DEFAUL
   let luminanceSum = 0;
   let visibleCount = 0;
 
+  // v1.9.0: half-luminance tracking
+  let leftLumSum = 0, rightLumSum = 0;
+  let leftVisCount = 0, rightVisCount = 0;
+  const halfX = Math.floor(width / 2);
+
   // Bounding box of non-transparent pixels
   let minX = width, minY = height, maxX = 0, maxY = 0;
 
@@ -80,8 +91,11 @@ export function checkSprite(filePath: string, config: VisualCheckConfig = DEFAUL
         hasAlpha = true;
       } else if (a === 255) {
         opaqueCount++;
-        luminanceSum += (r * 0.299 + g * 0.587 + b * 0.114);
+        const lum = r * 0.299 + g * 0.587 + b * 0.114;
+        luminanceSum += lum;
         visibleCount++;
+        if (x < halfX) { leftLumSum += lum; leftVisCount++; }
+        else { rightLumSum += lum; rightVisCount++; }
         minX = Math.min(minX, x);
         minY = Math.min(minY, y);
         maxX = Math.max(maxX, x);
@@ -90,6 +104,10 @@ export function checkSprite(filePath: string, config: VisualCheckConfig = DEFAUL
         semiOpaqueCount++;
         hasAlpha = true;
         visibleCount++;
+        const lum = r * 0.299 + g * 0.587 + b * 0.114;
+        luminanceSum += lum;
+        if (x < halfX) { leftLumSum += lum; leftVisCount++; }
+        else { rightLumSum += lum; rightVisCount++; }
         minX = Math.min(minX, x);
         minY = Math.min(minY, y);
         maxX = Math.max(maxX, x);
@@ -198,6 +216,28 @@ export function checkSprite(filePath: string, config: VisualCheckConfig = DEFAUL
     }
   }
 
+  // v1.9.0: Edge detection — count silhouette perimeter pixels (4-neighbor)
+  let edgeCount = 0;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      if (png.data[idx + 3] === 0) continue;
+      const neighbors: [number, number][] = [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]];
+      for (const [nx, ny] of neighbors) {
+        if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
+          edgeCount++; break;
+        }
+        const nIdx = (ny * width + nx) * 4;
+        if (png.data[nIdx + 3] === 0) {
+          edgeCount++; break;
+        }
+      }
+    }
+  }
+
+  const leftHalfLum = leftVisCount > 0 ? leftLumSum / leftVisCount : 0;
+  const rightHalfLum = rightVisCount > 0 ? rightLumSum / rightVisCount : 0;
+
   return {
     file: filePath,
     width, height,
@@ -209,6 +249,10 @@ export function checkSprite(filePath: string, config: VisualCheckConfig = DEFAUL
     fringe_pixels: fringePixels,
     avg_luminance: avgLuminance,
     issues,
+    silhouette_area: visibleCount,
+    silhouette_edge_count: edgeCount,
+    left_half_luminance: leftHalfLum,
+    right_half_luminance: rightHalfLum,
   };
 }
 
@@ -225,6 +269,17 @@ export function runVisualSuite(
   config: VisualCheckConfig = DEFAULT_CONFIG,
 ): VisualSuiteResult {
   const assertions: Array<{ key: string; status: 'pass' | 'fail' | 'warn'; message: string }> = [];
+
+  // v1.9.0: Load render doctrine for doctrine-aware thresholds
+  const doctrine = getRenderDoctrineOrDefaults(db, projectId);
+  const effectiveConfig: VisualCheckConfig = {
+    target_tile_size: config.target_tile_size,
+    min_occupancy: doctrine.occupancy_min,
+    max_occupancy: doctrine.occupancy_max,
+    min_dimension: config.min_dimension,
+    max_dimension: config.max_dimension,
+    fringe_tolerance: config.fringe_tolerance,
+  };
 
   const variants: VariantRow[] = scopeType === 'variant'
     ? [db.prepare('SELECT * FROM variants WHERE id = ?').get(scopeId) as VariantRow].filter(Boolean)
@@ -253,13 +308,15 @@ export function runVisualSuite(
 
     let variantPassed = true;
     let checkedCount = 0;
+    const directionResults = new Map<string, SpriteCheckResult>();
 
     for (const dir of DIRECTIONS) {
       const spritePath = path.join(albedoDir, `${dir}.png`);
       if (!fs.existsSync(spritePath)) continue;
 
       checkedCount++;
-      const result = checkSprite(spritePath, config);
+      const result = checkSprite(spritePath, effectiveConfig);
+      directionResults.set(dir, result);
 
       // Separate hard failures from warnings
       const hardIssues = result.issues.filter(i => !i.startsWith('warn:') && !i.startsWith('matte_fringe') && !i.startsWith('low_luminance'));
@@ -290,6 +347,40 @@ export function runVisualSuite(
           });
         }
       }
+    }
+
+    // v1.9.0: Cross-sprite assertions (after per-direction loop)
+
+    // Perimeter complexity (front direction)
+    const frontResult = directionResults.get('front');
+    if (frontResult && frontResult.silhouette_area > 0) {
+      const p = frontResult.silhouette_edge_count;
+      const a = frontResult.silhouette_area;
+      const complexity = (p * p) / (4 * Math.PI * a);
+      assertions.push({
+        key: `${variant.id}_perimeter_complexity`,
+        status: complexity <= doctrine.perimeter_complexity_max ? 'pass' : 'warn',
+        message: `${variant.id}: perimeter complexity ${complexity.toFixed(2)} (max ${doctrine.perimeter_complexity_max.toFixed(2)})`,
+      });
+    }
+
+    // Direction consistency (left vs right luminance bias)
+    const leftResult = directionResults.get('left');
+    const rightResult = directionResults.get('right');
+    if (leftResult && rightResult && leftResult.silhouette_area > 0 && rightResult.silhouette_area > 0) {
+      const leftDelta = leftResult.left_half_luminance - leftResult.right_half_luminance;
+      const rightDelta = rightResult.left_half_luminance - rightResult.right_half_luminance;
+      // Screen-space consistent lighting: mirrored views should have opposite bias
+      // or both near zero (uniform)
+      const consistent = Math.sign(leftDelta) !== Math.sign(rightDelta) ||
+                         (Math.abs(leftDelta) < 5 && Math.abs(rightDelta) < 5);
+      assertions.push({
+        key: `${variant.id}_direction_consistency`,
+        status: consistent ? 'pass' : 'warn',
+        message: consistent
+          ? `${variant.id}: direction luminance consistent`
+          : `${variant.id}: luminance L/R flip detected (left view delta ${leftDelta.toFixed(1)}, right view delta ${rightDelta.toFixed(1)})`,
+      });
     }
 
     if (checkedCount === 0) {

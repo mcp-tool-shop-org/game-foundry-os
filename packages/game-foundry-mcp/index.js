@@ -91,6 +91,10 @@ import { registerProofRevokeFreeze } from '../proof-lab-mcp/dist/tools/proofRevo
 import { registerProofCompareRuns } from '../proof-lab-mcp/dist/tools/proofCompareRuns.js';
 import { registerProofGetProjectMatrix } from '../proof-lab-mcp/dist/tools/proofGetProjectMatrix.js';
 import { registerProofRunVisualSuite } from '../proof-lab-mcp/dist/tools/proofRunVisualSuite.js';
+// v1.9.0 Render Doctrine + Board Composite
+import { registerRenderDoctrineSet } from '../proof-lab-mcp/dist/tools/renderDoctrineSet.js';
+import { registerRenderDoctrineGet } from '../proof-lab-mcp/dist/tools/renderDoctrineGet.js';
+import { registerProofRunBoardComposite } from '../proof-lab-mcp/dist/tools/proofRunBoardComposite.js';
 
 // Studio Bootstrap tools (Phase 5)
 import { setDb as setStudioDb } from '../studio-mcp/dist/server.js';
@@ -127,6 +131,12 @@ import { registerChapterGetPlaytestStatus } from '../studio-mcp/dist/tools/chapt
 import { registerChapterList } from '../studio-mcp/dist/tools/chapterList.js';
 import { registerChapterRunFullProof } from '../studio-mcp/dist/tools/chapterRunFullProof.js';
 import { registerChapterGetTimeline } from '../studio-mcp/dist/tools/chapterGetTimeline.js';
+// v1.8.0 Chapter Authoring Spine tools
+import { registerChapterSetDefaults } from '../studio-mcp/dist/tools/chapterSetDefaults.js';
+import { registerChapterGetDefaults } from '../studio-mcp/dist/tools/chapterGetDefaults.js';
+import { registerChapterScaffold } from '../studio-mcp/dist/tools/chapterScaffold.js';
+import { registerChapterGetAuthoringGaps } from '../studio-mcp/dist/tools/chapterGetAuthoringGaps.js';
+import { registerChapterGetFirstPlayablePath } from '../studio-mcp/dist/tools/chapterGetFirstPlayablePath.js';
 
 // Engine Bridge tools
 import { registerVerifyRuntimePaths } from '../engine-bridge-mcp/dist/tools/verifyRuntimePaths.js';
@@ -166,10 +176,10 @@ import { registerBattleRecordPlaytestResult } from '../battle-scene-mcp/dist/too
 // ─── Single DB connection ───────────────────────────────────
 const db = openDatabase();
 
-// ─── Single MCP server, 130 tools ───────────────────────────
+// ─── Single MCP server, 138 tools ───────────────────────────
 const server = new McpServer({
   name: 'game-foundry-mcp',
-  version: '1.6.0',
+  version: '1.9.0',
 });
 
 // Sprite Foundry — inspection (8)
@@ -260,6 +270,11 @@ registerProofCompareRuns(server);
 registerProofGetProjectMatrix(server);
 registerProofRunVisualSuite(server);
 
+// Render Doctrine + Board Composite (3) — v1.9.0
+registerRenderDoctrineSet(server);
+registerRenderDoctrineGet(server);
+registerProofRunBoardComposite(server);
+
 // Canon Layer (15)
 setCanonDb(db);
 registerCanonSyncVault(server);
@@ -314,6 +329,13 @@ registerChapterGetPlaytestStatus(server);
 registerChapterList(server);
 registerChapterRunFullProof(server);
 registerChapterGetTimeline(server);
+
+// Chapter Authoring Spine (5) — v1.8.0
+registerChapterSetDefaults(server);
+registerChapterGetDefaults(server);
+registerChapterScaffold(server);
+registerChapterGetAuthoringGaps(server);
+registerChapterGetFirstPlayablePath(server);
 
 // Battle Scene (14) — v1.5.0
 setBattleSceneDb(db);

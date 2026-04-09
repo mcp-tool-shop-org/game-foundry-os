@@ -40,3 +40,7 @@ export type { ProofTimelineEntry } from './timeline.js';
 // Report
 export { generateFreezeReport } from './report.js';
 export type { FreezeReport, FreezeReportSuiteEntry } from './report.js';
+
+// Board composite proof (v1.9.0)
+export { runBoardCompositeSuite } from './board-composite-proof.js';
+export type { BoardCompositeSuiteResult } from './board-composite-proof.js';

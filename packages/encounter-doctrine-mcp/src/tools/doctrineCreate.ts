@@ -22,15 +22,38 @@ export function registerDoctrineCreate(server: McpServer): void {
     async (params) => {
       const db = getDb();
 
-      // Upsert the encounter with base fields
+      // Check chapter authoring defaults for inheritance
+      let inheritedRows = params.arena_rows;
+      let inheritedCols = params.arena_cols;
+      let inheritedTurnLimit = params.turn_limit;
+      let inheritedType = params.encounter_type;
+
+      const chapterDefaults = db.prepare(
+        'SELECT * FROM chapter_authoring_defaults WHERE chapter_id = ?'
+      ).get(params.chapter_id) as Record<string, unknown> | undefined;
+
+      if (chapterDefaults) {
+        if (inheritedRows === undefined) inheritedRows = chapterDefaults.default_grid_rows as number;
+        if (inheritedCols === undefined) inheritedCols = chapterDefaults.default_grid_cols as number;
+        if (inheritedTurnLimit === undefined && chapterDefaults.default_max_turns != null) {
+          inheritedTurnLimit = chapterDefaults.default_max_turns as number;
+        }
+        // Only inherit encounter_type if the caller used the Zod default (i.e. didn't explicitly set it)
+        // Since Zod .default('standard') always fills the value, we can't distinguish.
+        // Instead, inherit encounter_type from defaults only if no explicit override from caller.
+        // The Zod default means params.encounter_type is always set, so we skip type inheritance here.
+        // Users who want chapter-level encounter_type should set it via chapter_set_defaults + chapter_scaffold.
+      }
+
+      // Upsert the encounter with base fields (inherited defaults fill unspecified fields)
       const encounter = upsertEncounter(db, {
         id: params.encounter_id,
         project_id: params.project_id,
         chapter: params.chapter_id,
         label: params.display_name,
-        grid_rows: params.arena_rows,
-        grid_cols: params.arena_cols,
-        max_turns: params.turn_limit,
+        grid_rows: inheritedRows,
+        grid_cols: inheritedCols,
+        max_turns: inheritedTurnLimit,
       });
 
       // Update Phase 2 fields

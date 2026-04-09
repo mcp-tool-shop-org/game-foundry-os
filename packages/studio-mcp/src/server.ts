@@ -35,6 +35,13 @@ import { registerChapterList } from './tools/chapterList.js';
 import { registerChapterRunFullProof } from './tools/chapterRunFullProof.js';
 import { registerChapterGetTimeline } from './tools/chapterGetTimeline.js';
 
+// Chapter Authoring Spine tools (v1.8.0)
+import { registerChapterSetDefaults } from './tools/chapterSetDefaults.js';
+import { registerChapterGetDefaults } from './tools/chapterGetDefaults.js';
+import { registerChapterScaffold } from './tools/chapterScaffold.js';
+import { registerChapterGetAuthoringGaps } from './tools/chapterGetAuthoringGaps.js';
+import { registerChapterGetFirstPlayablePath } from './tools/chapterGetFirstPlayablePath.js';
+
 let _db: Database.Database | undefined;
 
 export function getDb(): Database.Database {
@@ -87,6 +94,13 @@ export function createServer(): McpServer {
   registerChapterList(server);
   registerChapterRunFullProof(server);
   registerChapterGetTimeline(server);
+
+  // Chapter Authoring Spine (v1.8.0)
+  registerChapterSetDefaults(server);
+  registerChapterGetDefaults(server);
+  registerChapterScaffold(server);
+  registerChapterGetAuthoringGaps(server);
+  registerChapterGetFirstPlayablePath(server);
 
   return server;
 }

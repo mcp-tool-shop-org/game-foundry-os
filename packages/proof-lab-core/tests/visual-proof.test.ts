@@ -167,7 +167,7 @@ describe('runVisualSuite', () => {
     fs.mkdirSync(albedoDir, { recursive: true });
 
     const goodSprite = makePNG(48, 48, (x, y) => {
-      if (x < 6 || x > 41 || y < 4 || y > 43) return [0, 0, 0, 0];
+      if (x < 10 || x > 37 || y < 10 || y > 37) return [0, 0, 0, 0];
       return [120, 80, 60, 255];
     });
 
@@ -216,7 +216,7 @@ describe('runVisualSuite', () => {
     fs.mkdirSync(albedoDir, { recursive: true });
 
     const goodSprite = makePNG(48, 48, (x, y) => {
-      if (x < 6 || x > 41 || y < 4 || y > 43) return [0, 0, 0, 0];
+      if (x < 10 || x > 37 || y < 10 || y > 37) return [0, 0, 0, 0];
       return [120, 80, 60, 255];
     });
     fs.writeFileSync(path.join(albedoDir, 'front.png'), goodSprite);

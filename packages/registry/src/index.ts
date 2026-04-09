@@ -13,3 +13,5 @@ export * from './models/pack.js';
 export * from './models/freeze.js';
 export * from './models/battle-scene.js';
 export * from './models/chapter.js';
+export * from './models/chapter-authoring.js';
+export * from './models/render-doctrine.js';

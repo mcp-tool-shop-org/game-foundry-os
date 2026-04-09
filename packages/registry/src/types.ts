@@ -1139,3 +1139,203 @@ export interface ChapterVerdictRow {
   next_action_target: string | null;
   created_at: string;
 }
+
+// ─── v1.8.0 Chapter Authoring Spine ───────────────────────
+
+/** Chapter authoring defaults row (DB table) */
+export interface ChapterAuthoringDefaultsRow {
+  chapter_id: string;
+  project_id: string;
+  default_grid_rows: number;
+  default_grid_cols: number;
+  default_encounter_type: string;
+  default_max_turns: number | null;
+  default_tile_size_px: number;
+  default_viewport_width: number;
+  default_viewport_height: number;
+  require_scene_contract: number;
+  require_ui_layers: number;
+  require_proof_pass: number;
+  require_playtest_pass: number;
+  require_canon_link: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Chapter scaffold receipt row (DB table) */
+export interface ChapterScaffoldReceiptRow {
+  id: string;
+  chapter_id: string;
+  project_id: string;
+  input_brief_json: string;
+  encounters_created: number;
+  scene_contracts_created: number;
+  layers_configured: number;
+  receipt_hash: string | null;
+  created_at: string;
+}
+
+/** Authoring gap severity */
+export type AuthoringGapSeverity = 'blocker' | 'warning';
+
+/** Authoring gap domain */
+export type AuthoringGapDomain =
+  | 'roster'
+  | 'scene_contract'
+  | 'ui_layers'
+  | 'canon'
+  | 'variant_registry'
+  | 'sprite_pack'
+  | 'encounter_count';
+
+/** A single authoring gap for an encounter or chapter */
+export interface AuthoringGap {
+  encounter_id: string | null;
+  domain: AuthoringGapDomain;
+  gap_type: string;
+  description: string;
+  severity: AuthoringGapSeverity;
+}
+
+/** Result of computing authoring gaps for a chapter */
+export interface ChapterAuthoringGapsResult {
+  chapter_id: string;
+  project_id: string;
+  total_gaps: number;
+  blocker_count: number;
+  warning_count: number;
+  gaps: AuthoringGap[];
+}
+
+/** First-playable path step status */
+export type FirstPlayableStepStatus = 'done' | 'pending' | 'blocked';
+
+/** A single step in the first-playable path */
+export interface FirstPlayableStep {
+  step_index: number;
+  label: string;
+  description: string;
+  status: FirstPlayableStepStatus;
+  detail: string | null;
+  blocked_by: string | null;
+}
+
+/** Result of computing the first-playable path */
+export interface ChapterFirstPlayableResult {
+  chapter_id: string;
+  project_id: string;
+  overall_progress_pct: number;
+  steps: FirstPlayableStep[];
+  current_step: number;
+  next_action: string | null;
+  is_playable: boolean;
+}
+
+/** Scaffold brief — input to the scaffold operation */
+export interface ChapterScaffoldBrief {
+  project_id: string;
+  chapter_id: string;
+  display_name: string;
+  sort_order?: number;
+  intent_summary?: string;
+  encounters: Array<{
+    encounter_id: string;
+    display_name: string;
+    encounter_type?: EncounterType;
+    intent_summary?: string;
+  }>;
+  defaults?: Partial<{
+    default_grid_rows: number;
+    default_grid_cols: number;
+    default_tile_size_px: number;
+    default_viewport_width: number;
+    default_viewport_height: number;
+    default_encounter_type: string;
+    default_max_turns: number | null;
+    require_scene_contract: boolean;
+    require_ui_layers: boolean;
+    require_proof_pass: boolean;
+    require_playtest_pass: boolean;
+    require_canon_link: boolean;
+  }>;
+}
+
+/** Scaffold result */
+export interface ChapterScaffoldResult {
+  chapter_id: string;
+  project_id: string;
+  chapter: ChapterRow;
+  defaults_applied: ChapterAuthoringDefaultsRow;
+  encounters_created: string[];
+  scene_contracts_created: string[];
+  layers_configured: number;
+  receipt_id: string;
+}
+
+// ─── v1.9.0 Render Doctrine (Visual Foundry) ──────────────
+
+/** Camera projection types */
+export type CameraProjection = 'orthographic' | 'perspective';
+
+/** Shader family choices */
+export type ShaderFamily = 'pbr_simplified' | 'toon_ramp' | 'hybrid';
+
+/** Outline rendering methods */
+export type OutlineMethod = 'freestyle' | 'inverted_hull' | 'compositor';
+
+/** Edge treatment doctrines */
+export type EdgeDoctrine = 'high_quality_aa' | 'crisp_pixel';
+
+/** Alpha export policy */
+export type AlphaPolicy = 'straight' | 'premultiplied';
+
+/** Board test background types */
+export type BoardTestBackground = 'dark' | 'mid' | 'noisy';
+
+/** Required render passes */
+export type RenderPass = 'beauty' | 'outline' | 'mask' | 'normal';
+
+/** Render doctrine row (DB table — one per project) */
+export interface RenderDoctrineRow {
+  project_id: string;
+  engine_baseline: string;
+  final_renderer: string;
+  iteration_renderer: string;
+  camera_projection: string;
+  camera_yaw: number;
+  camera_pitch: number;
+  camera_focal_length: number;
+  orbit_rig: string;
+  direction_count: number;
+  direction_labels_json: string;
+  yaw_step: number;
+  cell_sizes_json: string;
+  target_heights_json: string;
+  oversample_factor: number;
+  lighting_rig: string;
+  key_fill_ratio: number;
+  rim_intensity: number;
+  shader_family: string;
+  outline_method: string;
+  outline_thickness_json: string;
+  edge_doctrine: string;
+  alpha_policy: string;
+  color_space: string;
+  view_transform: string;
+  export_formats_json: string;
+  naming_convention: string;
+  occupancy_min: number;
+  occupancy_max: number;
+  occupancy_min_large: number;
+  occupancy_max_large: number;
+  perimeter_complexity_max: number;
+  pose_delta_min: number;
+  class_confusion_max_iou: number;
+  recognition_class_pct: number;
+  recognition_action_pct: number;
+  board_test_backgrounds_json: string;
+  min_board_contrast: number;
+  required_passes_json: string;
+  created_at: string;
+  updated_at: string;
+}
